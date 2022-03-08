@@ -1,6 +1,6 @@
 #include "CodeGenVisitor.h"
 
-antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx) 
+antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
 	std::cout<<".globl	main\n"
 		" main: \n"
@@ -57,10 +57,22 @@ antlrcpp::Any CodeGenVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	if ((it = symbols.find(ctx->IDENTIFIER()->getText()))!=symbols.end()) {
 		offset = it->second;
 	}
-	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
-	
+	if (ctx->EQ() != nullptr) {
+		std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	}
+	else if (ctx->B_PRIO_14() != nullptr) {
+		std::string token(ctx->B_PRIO_14()->getText());
+		if (token == "+=") {
+			std::cout<<" 	addl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+			}
+		else if (token == "-=") {
+			std::cout<<" 	subl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+		}
+	}
+
 	return 0;
 }
+
 antlrcpp::Any CodeGenVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	visit(ctx->expression(0));
 	int offset = var_count;

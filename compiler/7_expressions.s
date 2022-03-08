@@ -1,4 +1,4 @@
-	.file	"4_return_init_var.c"
+	.file	"7_expressions.c"
 	.text
 	.globl	main
 	.type	main, @function
@@ -11,7 +11,15 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	movl	$42, -4(%rbp)
+	movl	$7, -16(%rbp)
+	movl	$4, -12(%rbp)
+	movl	$33, -8(%rbp)
+	movl	-12(%rbp), %eax
+	imull	-16(%rbp), %eax
+	movl	-8(%rbp), %edx
+	subl	%eax, %edx
+	movl	%edx, %eax
+	movl	%eax, -4(%rbp)
 	movl	-4(%rbp), %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8

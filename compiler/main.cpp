@@ -47,5 +47,8 @@ int main(int argn, const char **argv)
   CodeGenVisitor v;
   v.visit(tree);
 
+  if (v.getErrors()) {
+    return 1;
+  }
   return 0;
 }

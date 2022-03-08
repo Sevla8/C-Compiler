@@ -22,6 +22,8 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 	}
 	if ((it = symbols.find(ctx->IDENTIFIER()->getText()))!=symbols.end()) {
 		offset = it->second;
+		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<"already declared here.\n";
+		errors += 1;
 	} else {
 		symbols.insert(make_pair(ctx->IDENTIFIER()->getText(), var_count));
 		offset = var_count;
@@ -48,7 +50,7 @@ antlrcpp::Any CodeGenVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx) {
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx) {
+antlrcpp::Any CodeGenVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	visit(ctx->expression());
 	std::map<std::string, int>::iterator it;
 	int offset;
@@ -56,5 +58,40 @@ antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx
 		offset = it->second;
 	}
 	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	
 	return 0;
+}
+antlrcpp::Any CodeGenVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
+	visit(ctx->expression(0));
+	int offset = var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->B_PRIO_3()->getText());
+	if (token=="*") {
+		std::cout<<" 	imull "<< (-4*(offset+1)) <<"(%rbp), %eax\n";
+	}else if (token=="/") {
+		std::cout<<" 	idivl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n"
+				" 	movl "<< (-4*(offset+1)) <<"(%rbp), %eax\n";
+	}
+	return 0;
+}
+antlrcpp::Any CodeGenVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
+	visit(ctx->expression(0));
+	int offset = var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->BU_PRIO_2_4()->getText());
+	if (token=="+") {
+		std::cout<<" 	addl "<< (-4*(offset+1)) <<"(%rbp), %eax\n";
+	}else if (token=="-") {
+		std::cout<<" 	subl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n"
+				" 	movl "<< (-4*(offset+1)) <<"(%rbp), %eax\n";
+	}
+	return 0;
+}
+
+int CodeGenVisitor::getErrors() {
+	return errors;
 }

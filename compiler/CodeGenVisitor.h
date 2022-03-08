@@ -22,6 +22,12 @@ public:
   
   virtual antlrcpp::Any visitPrio14(ifccParser::Prio14Context *ctx) override;
 
+  virtual antlrcpp::Any visitPrio8(ifccParser::Prio8Context *ctx) override;
+  
+  virtual antlrcpp::Any visitPrio9(ifccParser::Prio9Context *ctx) override;
+
+  virtual antlrcpp::Any visitPrio10(ifccParser::Prio10Context *ctx) override;
+
   int getErrors();
 
 protected:

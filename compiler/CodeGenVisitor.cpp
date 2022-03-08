@@ -92,6 +92,45 @@ antlrcpp::Any CodeGenVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 	return 0;
 }
 
+antlrcpp::Any CodeGenVisitor::visitPrio8(ifccParser::Prio8Context *ctx){
+	visit(ctx->expression(0));
+	int offset=var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->B_PRIO_8()->getText());
+	if(token=="&"){
+		std::cout<<" 	andl "<<(-4*(offset+1)) <<"(%rbp), %eax\n"; 	
+	}
+	return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitPrio9(ifccParser::Prio9Context *ctx){
+	visit(ctx->expression(0));
+	int offset=var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->B_PRIO_9()->getText());
+	if(token=="^"){
+		std::cout<<" 	xorl "<<(-4*(offset+1)) <<"(%rbp), %eax\n"; 	
+	}
+	return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitPrio10(ifccParser::Prio10Context *ctx){
+	visit(ctx->expression(0));
+	int offset=var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->B_PRIO_10()->getText());
+	if(token=="|"){
+		std::cout<<" 	orl "<<(-4*(offset+1)) <<"(%rbp), %eax\n"; 	
+	}
+	return 0;
+}
+
 int CodeGenVisitor::getErrors() {
 	return errors;
 }

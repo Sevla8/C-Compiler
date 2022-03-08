@@ -92,6 +92,43 @@ antlrcpp::Any CodeGenVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 	return 0;
 }
 
+
+antlrcpp::Any CodeGenVisitor::visitPrio6(ifccParser::Prio6Context *ctx) {
+	visit(ctx->expression(0));
+	int offset = var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->B_PRIO_6()->getText());
+
+
+	std::cout<<" cmpl	%eax,"<< (-4*(offset+1))<<"(%rbp)\n";
+
+		if (token=="<") std::cout<<" 	setl	%al\n ";
+		if (token==">") std::cout<<" 	setg	%al\n ";
+		if (token=="<=") std::cout<<" 	setle	%al\n ";
+    	if (token==">=") std::cout<<" 	setge	%al\n ";
+	std::cout<<"movzbl	%al, %eax\n";
+	return 0;
+}
+
+
+antlrcpp::Any CodeGenVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
+	visit(ctx->expression(0));
+	int offset = var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->B_PRIO_7()->getText());
+
+
+	std::cout<<" cmpl	%eax,"<< (-4*(offset+1))<<"(%rbp)\n";
+
+		if (token=="==") std::cout<<" 	sete	%al\n ";
+		if (token=="!=") std::cout<<" 	setne	%al\n ";
+	std::cout<<"movzbl	%al, %eax\n";
+	return 0;
+}
 int CodeGenVisitor::getErrors() {
 	return errors;
 }

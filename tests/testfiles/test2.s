@@ -1,4 +1,4 @@
-	.file	"test.c"
+	.file	"test2.c"
 	.text
 	.globl	main
 	.type	main, @function
@@ -15,7 +15,7 @@ main:
 	movl	-8(%rbp), %eax
 	movl	-4(%rbp), %edx
 	movl	%eax, %ecx
-	sall	%cl, %edx
+	sarl	%cl, %edx
 	movl	%edx, %eax
 	movl	%eax, -12(%rbp)
 	movl	-12(%rbp), %eax

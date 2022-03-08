@@ -129,6 +129,23 @@ antlrcpp::Any CodeGenVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
 	std::cout<<"movzbl	%al, %eax\n";
 	return 0;
 }
+
+antlrcpp::Any CodeGenVisitor::visitPrio5(ifccParser::Prio5Context *ctx) {
+	visit(ctx->expression(0));
+	int offset = var_count;
+	++var_count;
+	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
+	visit(ctx->expression(1));
+	std::string token(ctx->B_PRIO_5()->getText());
+
+	std::cout<<" 	movl	"<< (-4*(offset+1))<<"(%rbp),%edx\n";
+	std::cout<<" 	movl	%eax,%ecx\n";
+	
+	if (token=="<<") std::cout<<" 	sall	%cl,%edx\n";;
+	if (token==">>") std::cout<<" 	sarl	%cl,%edx\n";;
+	std::cout<<" movl	%edx,%eax\n";
+	return 0;
+}
 int CodeGenVisitor::getErrors() {
 	return errors;
 }

@@ -22,7 +22,7 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 	}
 	if ((it = symbols.find(ctx->IDENTIFIER()->getText()))!=symbols.end()) {
 		offset = it->second;
-		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<"already declared here.\n";
+		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" already declared here.\n";
 		errors += 1;
 	} else {
 		symbols.insert(make_pair(ctx->IDENTIFIER()->getText(), var_count));
@@ -45,6 +45,9 @@ antlrcpp::Any CodeGenVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx) {
 	int offset;
 	if ((it = symbols.find(ctx->IDENTIFIER()->getText()))!=symbols.end()) {
 		offset = it->second;
+	} else {
+		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" not declared.\n";
+		errors += 1;
 	}
 	std::cout<<" 	movl "<< (-4*(offset+1)) <<"(%rbp), %eax\n";
 	return 0;
@@ -56,6 +59,9 @@ antlrcpp::Any CodeGenVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	int offset;
 	if ((it = symbols.find(ctx->IDENTIFIER()->getText()))!=symbols.end()) {
 		offset = it->second;
+	} else {
+		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" not declared.\n";
+		errors += 1;
 	}
 	std::cout<<" 	movl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n";
 	
@@ -70,9 +76,16 @@ antlrcpp::Any CodeGenVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	std::string token(ctx->B_PRIO_3()->getText());
 	if (token=="*") {
 		std::cout<<" 	imull "<< (-4*(offset+1)) <<"(%rbp), %eax\n";
-	}else if (token=="/") {
-		std::cout<<" 	idivl %eax, "<< (-4*(offset+1)) <<"(%rbp)\n"
-				" 	movl "<< (-4*(offset+1)) <<"(%rbp), %eax\n";
+	}else if (token=="/" || token=="%") {
+		std::cout<<
+				" 	movl "<< "%eax, %ebx\n"
+				" 	movl "<< (-4*(offset+1)) <<"(%rbp), %eax\n"
+				" 	cltd\n"
+				" 	idivl %ebx\n";
+		if (token=="%") {
+			std::cout<<
+				" 	movl "<< "%edx, %eax\n";
+		}
 	}
 	return 0;
 }

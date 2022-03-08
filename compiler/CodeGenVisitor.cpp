@@ -67,6 +67,19 @@ antlrcpp::Any CodeGenVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	
 	return 0;
 }
+
+
+antlrcpp::Any CodeGenVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
+	visit(ctx->expression());
+	std::string token(ctx->BU_PRIO_2_4()->getText());
+	if(token == "+"){
+	}else if(token == "-"){
+		std::cout<<"	negl	%eax\n";
+	}
+	return 0;
+	
+}
+
 antlrcpp::Any CodeGenVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	visit(ctx->expression(0));
 	int offset = var_count;

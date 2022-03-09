@@ -21,7 +21,13 @@ public:
   virtual antlrcpp::Any visitPrio3(ifccParser::Prio3Context *ctx) override;
   
   virtual antlrcpp::Any visitPrio4(ifccParser::Prio4Context *ctx) override;
+
+  virtual antlrcpp::Any visitPrio5(ifccParser::Prio5Context *ctx) override;
   
+  virtual antlrcpp::Any visitPrio6(ifccParser::Prio6Context *ctx) override;
+
+  virtual antlrcpp::Any visitPrio7(ifccParser::Prio7Context *ctx) override;
+
   virtual antlrcpp::Any visitPrio14(ifccParser::Prio14Context *ctx) override;
 
   virtual antlrcpp::Any visitPrio8(ifccParser::Prio8Context *ctx) override;

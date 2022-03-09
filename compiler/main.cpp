@@ -8,7 +8,9 @@
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
 
-#include "CodeGenVisitor.h"
+#include "SymbolTable.h"
+#include "VariableAnalyserVisitor.h"
+#include "IRProducerVisitor.h"
 
 using namespace antlr4;
 using namespace std;
@@ -43,12 +45,18 @@ int main(int argn, const char **argv)
       exit(1);
   }
 
-  
-  CodeGenVisitor v;
-  v.visit(tree);
+  SymbolTable sym;
 
-  if (v.getErrors()) {
-    return 1;
+  VariableAnalyserVisitor vav(sym);
+  vav.visit(tree);
+
+  if (vav.getErrors()) {
+      cerr << "error: syntax error during analyse" << endl;
+      exit(1);
   }
+
+  IRProducerVisitor ipv(sym);
+  ipv.visit(tree);
+
   return 0;
 }

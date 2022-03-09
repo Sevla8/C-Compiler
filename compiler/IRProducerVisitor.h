@@ -2,12 +2,15 @@
 
 
 #include "antlr4-runtime.h"
+#include "SymbolTable.h"
 #include "generated/ifccBaseVisitor.h"
 #include <map>
 #include <string>
 
-class  CodeGenVisitor : public ifccBaseVisitor {
+class  IRProducerVisitor : public ifccBaseVisitor {
 public:
+  IRProducerVisitor(SymbolTable& sym) : symbols(sym) {}
+
   virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
   virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
@@ -39,8 +42,7 @@ public:
   int getErrors();
 
 protected:
-  std::map<std::string, int> symbols;
-  int var_count = 0;
+  SymbolTable& symbols;
   int errors = 0;
 };
 

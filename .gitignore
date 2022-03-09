@@ -2,4 +2,5 @@ antlr/**
 compiler/build/**
 compiler/generated/**
 compiler/ifcc
-tests/ifcc-test-output
+compiler/.antlr/**
+tests/ifcc-test-output/**

@@ -1,4 +1,4 @@
-// Generated from \\wsl$\Ubuntu\home\tyefen\pld-comp\compiler\ifcc.g4 by ANTLR 4.8
+// Generated from /home/sevla/Desktop/COMP-project/compiler/ifcc.g4 by ANTLR 4.8
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -16,10 +16,10 @@ public class ifccParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, B_PRIO_3=9, 
-		BU_PRIO_2_4=10, B_PRIO_5=11, B_PRIO_6=12, B_PRIO_7=13, B_PRIO_8=14, B_PRIO_9=15, 
-		B_PRIO_10=16, B_PRIO_11=17, B_PRIO_12=18, B_PRIO_14=19, RETURN=20, TYPE=21, 
-		IDENTIFIER=22, CONST=23, COMMENT=24, DIRECTIVE=25, WS=26;
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, EQ=9, 
+		B_PRIO_3=10, BU_PRIO_2_4=11, B_PRIO_5=12, B_PRIO_6=13, B_PRIO_7=14, B_PRIO_8=15, 
+		B_PRIO_9=16, B_PRIO_10=17, B_PRIO_11=18, B_PRIO_12=19, B_PRIO_14=20, RETURN=21, 
+		TYPE=22, IDENTIFIER=23, CONST=24, COMMENT=25, DIRECTIVE=26, WS=27;
 	public static final int
 		RULE_axiom = 0, RULE_prog = 1, RULE_instruction = 2, RULE_declaration = 3, 
 		RULE_expression = 4;
@@ -32,18 +32,18 @@ public class ifccParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'main'", "'('", "')'", "'{'", "';'", "'}'", "'?'", "':'", null, 
-			null, null, null, null, "'&'", "'^'", "'|'", "'&&'", "'||'", "'='", "'return'", 
-			"'int'"
+			null, "'main'", "'('", "')'", "'{'", "';'", "'}'", "'?'", "':'", "'='", 
+			null, null, null, null, null, "'&'", "'^'", "'|'", "'&&'", "'||'", null, 
+			"'return'", "'int'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, null, null, null, null, "B_PRIO_3", "BU_PRIO_2_4", 
-			"B_PRIO_5", "B_PRIO_6", "B_PRIO_7", "B_PRIO_8", "B_PRIO_9", "B_PRIO_10", 
-			"B_PRIO_11", "B_PRIO_12", "B_PRIO_14", "RETURN", "TYPE", "IDENTIFIER", 
-			"CONST", "COMMENT", "DIRECTIVE", "WS"
+			null, null, null, null, null, null, null, null, null, "EQ", "B_PRIO_3", 
+			"BU_PRIO_2_4", "B_PRIO_5", "B_PRIO_6", "B_PRIO_7", "B_PRIO_8", "B_PRIO_9", 
+			"B_PRIO_10", "B_PRIO_11", "B_PRIO_12", "B_PRIO_14", "RETURN", "TYPE", 
+			"IDENTIFIER", "CONST", "COMMENT", "DIRECTIVE", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -256,7 +256,7 @@ public class ifccParser extends Parser {
 	public static class DeclarationContext extends ParserRuleContext {
 		public TerminalNode TYPE() { return getToken(ifccParser.TYPE, 0); }
 		public TerminalNode IDENTIFIER() { return getToken(ifccParser.IDENTIFIER, 0); }
-		public TerminalNode B_PRIO_14() { return getToken(ifccParser.B_PRIO_14, 0); }
+		public TerminalNode EQ() { return getToken(ifccParser.EQ, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
@@ -280,10 +280,10 @@ public class ifccParser extends Parser {
 			setState(38);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			if (_la==B_PRIO_14) {
+			if (_la==EQ) {
 				{
 				setState(36);
-				match(B_PRIO_14);
+				match(EQ);
 				setState(37);
 				expression(0);
 				}
@@ -421,10 +421,11 @@ public class ifccParser extends Parser {
 	}
 	public static class Prio14Context extends ExpressionContext {
 		public TerminalNode IDENTIFIER() { return getToken(ifccParser.IDENTIFIER, 0); }
-		public TerminalNode B_PRIO_14() { return getToken(ifccParser.B_PRIO_14, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode EQ() { return getToken(ifccParser.EQ, 0); }
+		public TerminalNode B_PRIO_14() { return getToken(ifccParser.B_PRIO_14, 0); }
 		public Prio14Context(ExpressionContext ctx) { copyFrom(ctx); }
 	}
 	public static class ValueContext extends ExpressionContext {
@@ -463,6 +464,7 @@ public class ifccParser extends Parser {
 		ExpressionContext _prevctx = _localctx;
 		int _startState = 8;
 		enterRecursionRule(_localctx, 8, RULE_expression, _p);
+		int _la;
 		try {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
@@ -503,7 +505,15 @@ public class ifccParser extends Parser {
 				setState(47);
 				match(IDENTIFIER);
 				setState(48);
-				match(B_PRIO_14);
+				_la = _input.LA(1);
+				if ( !(_la==EQ || _la==B_PRIO_14) ) {
+				_errHandler.recoverInline(this);
+				}
+				else {
+					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+					_errHandler.reportMatch(this);
+					consume();
+				}
 				setState(49);
 				expression(3);
 				}
@@ -731,32 +741,32 @@ public class ifccParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\34b\4\2\t\2\4\3\t"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\35b\4\2\t\2\4\3\t"+
 		"\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\7\3\25\n\3"+
 		"\f\3\16\3\30\13\3\3\3\3\3\3\3\3\3\3\3\3\4\3\4\5\4!\n\4\3\4\3\4\3\5\3\5"+
 		"\3\5\3\5\5\5)\n\5\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\5\6"+
 		"\67\n\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3"+
 		"\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6"+
-		"\3\6\3\6\3\6\7\6]\n\6\f\6\16\6`\13\6\3\6\2\3\n\7\2\4\6\b\n\2\2\2n\2\f"+
-		"\3\2\2\2\4\16\3\2\2\2\6 \3\2\2\2\b$\3\2\2\2\n\66\3\2\2\2\f\r\5\4\3\2\r"+
-		"\3\3\2\2\2\16\17\7\27\2\2\17\20\7\3\2\2\20\21\7\4\2\2\21\22\7\5\2\2\22"+
-		"\26\7\6\2\2\23\25\5\6\4\2\24\23\3\2\2\2\25\30\3\2\2\2\26\24\3\2\2\2\26"+
-		"\27\3\2\2\2\27\31\3\2\2\2\30\26\3\2\2\2\31\32\7\26\2\2\32\33\5\n\6\2\33"+
-		"\34\7\7\2\2\34\35\7\b\2\2\35\5\3\2\2\2\36!\5\b\5\2\37!\5\n\6\2 \36\3\2"+
-		"\2\2 \37\3\2\2\2!\"\3\2\2\2\"#\7\7\2\2#\7\3\2\2\2$%\7\27\2\2%(\7\30\2"+
-		"\2&\'\7\25\2\2\')\5\n\6\2(&\3\2\2\2()\3\2\2\2)\t\3\2\2\2*+\b\6\1\2+,\7"+
-		"\4\2\2,-\5\n\6\2-.\7\5\2\2.\67\3\2\2\2/\60\7\f\2\2\60\67\5\n\6\21\61\62"+
-		"\7\30\2\2\62\63\7\25\2\2\63\67\5\n\6\5\64\67\7\31\2\2\65\67\7\30\2\2\66"+
-		"*\3\2\2\2\66/\3\2\2\2\66\61\3\2\2\2\66\64\3\2\2\2\66\65\3\2\2\2\67^\3"+
-		"\2\2\289\f\20\2\29:\7\13\2\2:]\5\n\6\21;<\f\17\2\2<=\7\f\2\2=]\5\n\6\20"+
-		">?\f\16\2\2?@\7\r\2\2@]\5\n\6\17AB\f\r\2\2BC\7\16\2\2C]\5\n\6\16DE\f\f"+
-		"\2\2EF\7\17\2\2F]\5\n\6\rGH\f\13\2\2HI\7\20\2\2I]\5\n\6\fJK\f\n\2\2KL"+
-		"\7\21\2\2L]\5\n\6\13MN\f\t\2\2NO\7\22\2\2O]\5\n\6\nPQ\f\b\2\2QR\7\23\2"+
-		"\2R]\5\n\6\tST\f\7\2\2TU\7\24\2\2U]\5\n\6\bVW\f\6\2\2WX\7\t\2\2XY\5\n"+
-		"\6\2YZ\7\n\2\2Z[\5\n\6\7[]\3\2\2\2\\8\3\2\2\2\\;\3\2\2\2\\>\3\2\2\2\\"+
-		"A\3\2\2\2\\D\3\2\2\2\\G\3\2\2\2\\J\3\2\2\2\\M\3\2\2\2\\P\3\2\2\2\\S\3"+
-		"\2\2\2\\V\3\2\2\2]`\3\2\2\2^\\\3\2\2\2^_\3\2\2\2_\13\3\2\2\2`^\3\2\2\2"+
-		"\b\26 (\66\\^";
+		"\3\6\3\6\3\6\7\6]\n\6\f\6\16\6`\13\6\3\6\2\3\n\7\2\4\6\b\n\2\3\4\2\13"+
+		"\13\26\26\2n\2\f\3\2\2\2\4\16\3\2\2\2\6 \3\2\2\2\b$\3\2\2\2\n\66\3\2\2"+
+		"\2\f\r\5\4\3\2\r\3\3\2\2\2\16\17\7\30\2\2\17\20\7\3\2\2\20\21\7\4\2\2"+
+		"\21\22\7\5\2\2\22\26\7\6\2\2\23\25\5\6\4\2\24\23\3\2\2\2\25\30\3\2\2\2"+
+		"\26\24\3\2\2\2\26\27\3\2\2\2\27\31\3\2\2\2\30\26\3\2\2\2\31\32\7\27\2"+
+		"\2\32\33\5\n\6\2\33\34\7\7\2\2\34\35\7\b\2\2\35\5\3\2\2\2\36!\5\b\5\2"+
+		"\37!\5\n\6\2 \36\3\2\2\2 \37\3\2\2\2!\"\3\2\2\2\"#\7\7\2\2#\7\3\2\2\2"+
+		"$%\7\30\2\2%(\7\31\2\2&\'\7\13\2\2\')\5\n\6\2(&\3\2\2\2()\3\2\2\2)\t\3"+
+		"\2\2\2*+\b\6\1\2+,\7\4\2\2,-\5\n\6\2-.\7\5\2\2.\67\3\2\2\2/\60\7\r\2\2"+
+		"\60\67\5\n\6\21\61\62\7\31\2\2\62\63\t\2\2\2\63\67\5\n\6\5\64\67\7\32"+
+		"\2\2\65\67\7\31\2\2\66*\3\2\2\2\66/\3\2\2\2\66\61\3\2\2\2\66\64\3\2\2"+
+		"\2\66\65\3\2\2\2\67^\3\2\2\289\f\20\2\29:\7\f\2\2:]\5\n\6\21;<\f\17\2"+
+		"\2<=\7\r\2\2=]\5\n\6\20>?\f\16\2\2?@\7\16\2\2@]\5\n\6\17AB\f\r\2\2BC\7"+
+		"\17\2\2C]\5\n\6\16DE\f\f\2\2EF\7\20\2\2F]\5\n\6\rGH\f\13\2\2HI\7\21\2"+
+		"\2I]\5\n\6\fJK\f\n\2\2KL\7\22\2\2L]\5\n\6\13MN\f\t\2\2NO\7\23\2\2O]\5"+
+		"\n\6\nPQ\f\b\2\2QR\7\24\2\2R]\5\n\6\tST\f\7\2\2TU\7\25\2\2U]\5\n\6\bV"+
+		"W\f\6\2\2WX\7\t\2\2XY\5\n\6\2YZ\7\n\2\2Z[\5\n\6\7[]\3\2\2\2\\8\3\2\2\2"+
+		"\\;\3\2\2\2\\>\3\2\2\2\\A\3\2\2\2\\D\3\2\2\2\\G\3\2\2\2\\J\3\2\2\2\\M"+
+		"\3\2\2\2\\P\3\2\2\2\\S\3\2\2\2\\V\3\2\2\2]`\3\2\2\2^\\\3\2\2\2^_\3\2\2"+
+		"\2_\13\3\2\2\2`^\3\2\2\2\b\26 (\66\\^";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

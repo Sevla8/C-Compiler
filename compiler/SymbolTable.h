@@ -4,12 +4,14 @@
 #include <map>
 #include <string>
 
+using namespace std;
+
 class SymbolTable {
 public:
   bool exists(std::string id);
   void add(std::string id);
   VDescriptor& get(std::string id);
-  int getTempVariable();
+  string getTempVariable();
   void clearTempVariable();
 
 protected:

@@ -46,6 +46,7 @@ int main(int argn, const char **argv)
   }
 
   SymbolTable sym;
+  CFGx86 cfg(sym);
 
   VariableAnalyserVisitor vav(sym);
   vav.visit(tree);
@@ -55,8 +56,10 @@ int main(int argn, const char **argv)
       exit(1);
   }
 
-  IRProducerVisitor ipv(sym);
+  IRProducerVisitor ipv(sym, cfg);
   ipv.visit(tree);
+
+  cfg.gen_asm(cout);
 
   return 0;
 }

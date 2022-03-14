@@ -1,5 +1,7 @@
 #include "SymbolTable.h"
 
+using namespace std;
+
 bool SymbolTable::exists(std::string id) {
 	return symbols.find(id)!=symbols.end();
 }
@@ -16,14 +18,14 @@ VDescriptor& SymbolTable::get(std::string id) {
 	return it->second;
 }
 
-int SymbolTable::getTempVariable() {
+string SymbolTable::getTempVariable() {
 	int offset = var_count*4;
 	++var_count;
 	++tmp_count;
 	if (tmp_count>max_tmp) {
 		max_tmp = tmp_count;
 	}
-	return offset;
+	return to_string(offset);
 }
 
 void SymbolTable::clearTempVariable() {

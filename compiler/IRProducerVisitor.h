@@ -4,12 +4,15 @@
 #include "antlr4-runtime.h"
 #include "SymbolTable.h"
 #include "generated/ifccBaseVisitor.h"
-#include <map>
+#include "IRx86.h"
 #include <string>
+#include <vector>
+
+using namespace std;
 
 class  IRProducerVisitor : public ifccBaseVisitor {
 public:
-  IRProducerVisitor(SymbolTable& sym) : symbols(sym) {}
+  IRProducerVisitor(SymbolTable& sym, CFG& cfg_) : symbols(sym), cfg(cfg_) {}
 
   virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
@@ -43,6 +46,7 @@ public:
 
 protected:
   SymbolTable& symbols;
+  CFG& cfg;
   int errors = 0;
 };
 

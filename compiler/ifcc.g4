@@ -7,7 +7,7 @@ prog : 'int' 'main' '(' ')' '{' instruction* RETURN expression ';' '}' ;
 instruction : (declaration | expression) ';';
 declaration : TYPE IDENTIFIER (EQ expression)?;
 expression : '(' expression ')' #prio1
-| BU_PRIO_2_4 expression #prio2
+| (U_PRIO_2|BU_PRIO_2_4) expression #prio2
 | expression B_PRIO_3 expression #prio3
 | expression BU_PRIO_2_4 expression #prio4
 | expression B_PRIO_5 expression #prio5
@@ -24,6 +24,7 @@ expression : '(' expression ')' #prio1
 | IDENTIFIER #varvalue;
 
 EQ : '=';
+U_PRIO_2 : '!' | '~';
 B_PRIO_3 : '*' | '/' | '%';
 BU_PRIO_2_4 : '+' | '-';
 B_PRIO_5 : '<<' | '>>';

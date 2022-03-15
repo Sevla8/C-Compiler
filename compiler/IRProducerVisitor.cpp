@@ -69,13 +69,22 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	visit(ctx->expression());
-	std::string token(ctx->BU_PRIO_2_4()->getText());
 	vector<string> p;
-	if(token == "+"){
-	}else if(token == "-"){
-		p.push_back("!reg");
-		p.push_back("!reg");
-		cfg.add_IRInstr_to_current(IRInstr::Operation::neg,p);
+	p.push_back("!reg");
+	p.push_back("!reg");
+	if (ctx->BU_PRIO_2_4()!=nullptr) {
+		std::string token(ctx->BU_PRIO_2_4()->getText());
+		if(token == "+"){
+		}else if(token == "-"){
+			cfg.add_IRInstr_to_current(IRInstr::Operation::neg,p);
+		}
+	} else {
+		std::string token(ctx->U_PRIO_2()->getText());
+		if(token == "~") {
+			cfg.add_IRInstr_to_current(IRInstr::Operation::lnot,p);
+		}else if(token == "!") {
+			cfg.add_IRInstr_to_current(IRInstr::Operation::cnot,p);
+		}
 	}
 	return 0;
 	

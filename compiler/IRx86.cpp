@@ -51,15 +51,18 @@ void IRInstrx86::gen_asm(ostream &o)
         o << "idivl " << tmp << "\n";
         o << "movl %edx, " << cfg->IR_reg_to_asm(params[0]) << "\n";
         break;
+    case Operation::lnot:
     case Operation::neg:
+        if (op == Operation::neg) opstring = "negl";
+        else if (op == Operation::lnot) opstring = "notl";
         if (params[1] == params[0])
         {
-            o << "negl " << cfg->IR_reg_to_asm(params[0]) << "\n";
+            o << opstring << " " << cfg->IR_reg_to_asm(params[0]) << "\n";
         }
         else
         {
             o << "movl " << cfg->IR_reg_to_asm(params[1]) << ", " << tmp << "\n";
-            o << "negl " << tmp << "\n";
+            o << opstring << " " << tmp << "\n";
             o << "movl " << tmp << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
         }
         break;
@@ -87,6 +90,11 @@ void IRInstrx86::gen_asm(ostream &o)
             o << opstring << " " << cfg->IR_reg_to_asm(params[2]) << ", " << tmp << "\n";
             o << "movl " << tmp << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
         }
+        break;
+    case Operation::cnot:
+        o << "cmpl $0, " << cfg->IR_reg_to_asm(params[1]) << "\n";
+        o << "sete %bl\n";
+        o << "movzbl %bl, " << cfg->IR_reg_to_asm(params[0]) << "\n";
         break;
     case Operation::cmp_eq:
     case Operation::cmp_ne:

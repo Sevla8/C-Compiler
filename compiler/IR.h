@@ -32,6 +32,8 @@ class IRInstr {
 		land,
 		lor,
 		lxor,
+		lnot,
+		cnot,
 		lsl, 
 		lsr, 
 		rmem,

@@ -57,10 +57,21 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	visit(ctx->expression());
-	std::string token(ctx->BU_PRIO_2_4()->getText());
-	if(token == "+"){
-	}else if(token == "-"){
-		std::cout<<"	negl	%eax\n";
+	if (ctx->BU_PRIO_2_4()!=nullptr) {
+		std::string token(ctx->BU_PRIO_2_4()->getText());
+		if(token == "+"){
+		}else if(token == "-"){
+			std::cout<<"	negl	%eax\n";
+		}
+	} else {
+		std::string token(ctx->U_PRIO_2()->getText());
+		if(token == "~") {
+			std::cout<<"	notl	%eax\n";
+		}else if(token == "!") {
+			std::cout<<" 	cmpl	$0, %eax\n";
+			std::cout<<" 	sete	%al\n ";
+			std::cout<<" 	movzbl	%al, %eax\n";
+		}
 	}
 	return 0;
 	

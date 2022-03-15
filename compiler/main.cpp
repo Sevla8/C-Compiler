@@ -60,7 +60,7 @@ int main(int argn, const char **argv)
   ipv.visit(tree);
   
   cfg.gen_asm(cout);
-  cerr << " WARNINGS ";
+  
   sym.variablesNotUsed();
 
   return 0;

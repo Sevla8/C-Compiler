@@ -13,7 +13,7 @@ void SymbolTable::variablesNotUsed() {
 		
 		if (!p->second.getUsed())
 		{
-			cerr << "Variable " << p->first <<" not Used ! ";
+			cerr << "WARNING! Variable '" << p->first <<"' declared but never used.\n";
 		}
 		
   	}	

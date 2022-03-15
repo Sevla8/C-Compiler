@@ -2,7 +2,12 @@ grammar ifcc;
 
 axiom : prog ;
 
-prog : 'int' 'main' '(' ')' '{' instruction* RETURN expression ';' '}' ;
+prog : function*;
+
+function : (TYPE | 'void') IDENTIFIER '(' arguments? ')' '{' instruction* RETURN expression ';' '}' ;
+
+arguments : arguments ',' arguments #funcsplit
+| expression #funcarg;
 
 instruction : (declaration | expression) ';';
 declaration : TYPE IDENTIFIER (EQ expression)?;

@@ -55,11 +55,13 @@ int main(int argn, const char **argv)
       cerr << "error: syntax error during analyse" << endl;
       exit(1);
   }
-
+  
   IRProducerVisitor ipv(sym, cfg);
   ipv.visit(tree);
-
+  
   cfg.gen_asm(cout);
+  cerr << " WARNINGS ";
+  sym.variablesNotUsed();
 
   return 0;
 }

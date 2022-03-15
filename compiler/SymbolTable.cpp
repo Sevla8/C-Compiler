@@ -6,6 +6,20 @@ bool SymbolTable::exists(std::string id) {
 	return symbols.find(id)!=symbols.end();
 }
 
+void SymbolTable::variablesNotUsed() {
+	std::map<std::string, VDescriptor>::iterator p;
+	for(p = symbols.begin(); p != symbols.end(); p++)
+  	{
+		
+		if (!p->second.getUsed())
+		{
+			cerr << "Variable " << p->first <<" not Used ! ";
+		}
+		
+  	}	
+	return ;
+}
+
 void SymbolTable::add(std::string id) {
 	VDescriptor vd(var_count*4);
 	++var_count;

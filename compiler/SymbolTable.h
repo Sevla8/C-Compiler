@@ -3,12 +3,16 @@
 #include "VDescriptor.h"
 #include <map>
 #include <string>
+#include <iostream>
+
+
 
 using namespace std;
 
 class SymbolTable {
 public:
   bool exists(std::string id);
+  void variablesNotUsed();
   void add(std::string id);
   VDescriptor& get(std::string id);
   string getTempVariable();

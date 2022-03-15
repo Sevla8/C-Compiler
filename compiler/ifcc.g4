@@ -2,7 +2,13 @@ grammar ifcc;
 
 axiom : prog ;
 
-prog : 'int' 'main' '(' ')' '{' instruction* RETURN expression ';' '}' ;
+prog : 'int' 'main' '(' ')' block ;
+
+block :'{' (instruction | condition | block)* (RETURN expression ';')* '}'  ;
+
+condition : 'if' '(' expression ')' ifepxr ('else' ifepxr)? ;
+
+ifepxr : expression ';' | block | condition;
 
 instruction : (declaration | expression) ';';
 declaration : TYPE IDENTIFIER (EQ expression)?;

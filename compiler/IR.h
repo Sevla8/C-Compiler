@@ -10,9 +10,9 @@
 #include "SymbolTable.h"
 
 using namespace std;
-
-class BasicBlock;
 class CFG;
+class BasicBlock;
+
 
 
 //! The class for one 3-address instruction
@@ -99,6 +99,7 @@ class BasicBlock {
 		for(it=instrs.begin();it!=instrs.end();it++) {
 			(*it)->gen_asm(o);
 		}
+		cfg->create_jumps(exit_true,exit_false,o);
 	}
 
 	void add_IRInstr(IRInstr* instr) {
@@ -134,7 +135,7 @@ class CFG {
  public:
 	CFG(SymbolTable& sym) : symbols(sym) {}
 	
-	virtual void create_bb() = 0;
+	virtual BasicBlock* create_bb() = 0;
 	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) = 0;
 
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
@@ -142,6 +143,10 @@ class CFG {
 	virtual string IR_reg_to_asm(string reg) = 0; /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
 	virtual void gen_asm_prologue(ostream& o) = 0;
 	virtual void gen_asm_epilogue(ostream& o) = 0;
+
+	virtual void set_current_bb(BasicBlock* bb)=0;
+	virtual BasicBlock* get_current_bb()=0;
+	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
 
  protected:
 	BasicBlock* current_bb;

@@ -115,13 +115,32 @@ void IRInstrx86::gen_asm(ostream &o)
     }
 }
 
-void CFGx86::create_bb()
+BasicBlock * CFGx86::create_bb()
 {
     BasicBlock *bb = new BasicBlock(this, string("block") + to_string(nextBBnumber));
-    current_bb = bb;
+    // current_bb = bb;
     bbs.push_back(bb);
     ++nextBBnumber;
+    return bb;
 }
+
+void CFGx86::set_current_bb(BasicBlock* bb){
+    current_bb=bb;
+}
+
+BasicBlock* CFGx86::get_current_bb(){
+    return current_bb;
+}
+
+void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o){
+    if(exit_true!=nullptr){
+        o<<"je "<<exit_true->label<<'\n';
+    }
+    if(exit_false!=nullptr){
+        o<<"jne "<<exit_false->label<<'\n';
+    }
+}
+
 
 void CFGx86::add_IRInstr_to_current(IRInstr::Operation op, vector<string> &params)
 {

@@ -28,7 +28,11 @@ class CFGx86 : public CFG {
  public:
 	CFGx86(SymbolTable& sym) : CFG(sym) {}
 	
-	virtual void create_bb();
+	virtual BasicBlock * create_bb();
+	virtual void set_current_bb(BasicBlock* bb);
+	virtual BasicBlock* get_current_bb();
+	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o);
+
 
   virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params);
 

@@ -8,11 +8,11 @@ block :'{' (instruction | condition | loop | block)* (RETURN expression ';')* '}
 
 condition : 'if' '(' expression ')' branch ('else' branch)? ;
 
-branch : expression* ';' | block | condition | loop;
+branch : expression? ';' | block | condition | loop;
 
 loop: 'while' '(' expression ')' branch;
 
-instruction : (declaration | expression)* ';';
+instruction : (declaration | expression)? ';';
 declaration : TYPE IDENTIFIER (EQ expression)?;
 expression : '(' expression ')' #prio1
 | BU_PRIO_2_4 expression #prio2

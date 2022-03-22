@@ -138,12 +138,17 @@ BasicBlock* CFGx86::get_current_bb(){
 }
 
 void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o){
-    if(exit_true!=nullptr){
-        o<<"jne "<<exit_true->label<<'\n';
+    if(exit_true!=nullptr && exit_false!=nullptr && (exit_true->label)==(exit_false->label)){
+        o<<"jmp "<<exit_true->label<<'\n';
+    }else{
+        if(exit_true!=nullptr){
+            o<<"jne "<<exit_true->label<<'\n';
+        }
+        if(exit_false!=nullptr){
+            o<<"je "<<exit_false->label<<'\n';
+        }
     }
-    if(exit_false!=nullptr){
-        o<<"je "<<exit_false->label<<'\n';
-    }
+    
 }
 
 

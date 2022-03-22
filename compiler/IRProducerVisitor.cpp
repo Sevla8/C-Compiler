@@ -12,20 +12,6 @@ antlrcpp::Any IRProducerVisitor::visitProg(ifccParser::ProgContext *ctx)
 	return 0;
 }
 
-// antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx)
-// {
-// 	// cfg.set_current_bb(cfg.create_bb());
-
-// 	visitChildren(ctx);
-// 	return 0;
-// }
-
-antlrcpp::Any IRProducerVisitor::visitIfepxr(ifccParser::IfepxrContext *ctx)
-{
-	visitChildren(ctx);
-	return 0;
-}
-
 antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ctx)
 {
 	BasicBlock* bb_then=cfg.create_bb();
@@ -55,18 +41,57 @@ antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ct
 
 		cfg.add_bb(bb_then);	
 		cfg.set_current_bb(bb_then);
-		visit(ctx->ifepxr(0));
+		visit(ctx->branch(0));
 		
 		cfg.add_bb(bb_else);
 		
-		if(ctx->ifepxr(1)!=nullptr){	
+		if(ctx->branch(1)!=nullptr){	
 			cfg.set_current_bb(bb_else);
-			visit(ctx->ifepxr(1));
+			visit(ctx->branch(1));
 		}
 	}
 
 	cfg.add_bb(bb_endif);
 	cfg.set_current_bb(bb_endif);
+	return 0;
+}
+
+antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
+{
+	BasicBlock* bb_check=cfg.create_bb();
+	BasicBlock* bb_body=cfg.create_bb();
+	BasicBlock* bb_endwhile=cfg.create_bb();
+
+	BasicBlock* cur_bb=cfg.get_current_bb();
+	
+	bb_check->exit_true=bb_body;
+	bb_check->exit_false=bb_endwhile;
+
+	bb_body->exit_true=bb_check;
+	bb_body->exit_false=bb_check;
+	
+	bb_endwhile->exit_true=cur_bb->exit_true;
+	bb_endwhile->exit_false=cur_bb->exit_false;
+
+	cur_bb->exit_true=bb_check;
+	cur_bb->exit_false=bb_check;
+
+	if(ctx->expression()!=nullptr){
+		cfg.set_current_bb(bb_check);
+		cfg.add_bb(bb_check);
+		visit(ctx->expression());
+
+		vector<string> p;
+		p.push_back("!reg");
+		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
+
+		cfg.add_bb(bb_body);	
+		cfg.set_current_bb(bb_body);
+		visit(ctx->branch());
+	}
+
+	cfg.add_bb(bb_endwhile);
+	cfg.set_current_bb(bb_endwhile);
 	return 0;
 }
 

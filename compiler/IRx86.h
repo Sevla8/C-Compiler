@@ -29,6 +29,7 @@ class CFGx86 : public CFG {
 	CFGx86(SymbolTable& sym) : CFG(sym) {}
 	
 	virtual BasicBlock * create_bb();
+	virtual void add_bb(BasicBlock* newBB);
 	virtual void set_current_bb(BasicBlock* bb);
 	virtual BasicBlock* get_current_bb();
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o);

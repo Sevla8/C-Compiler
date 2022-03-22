@@ -4,14 +4,24 @@ using namespace std;
 
 antlrcpp::Any IRProducerVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
+	BasicBlock* first_bb=cfg.create_bb();
+	cfg.add_bb(first_bb);
+
+	cfg.set_current_bb(first_bb);
 	visitChildren(ctx);
 	return 0;
 }
 
-antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx)
-{
-	cfg.set_current_bb(cfg.create_bb());
+// antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx)
+// {
+// 	// cfg.set_current_bb(cfg.create_bb());
 
+// 	visitChildren(ctx);
+// 	return 0;
+// }
+
+antlrcpp::Any IRProducerVisitor::visitIfepxr(ifccParser::IfepxrContext *ctx)
+{
 	visitChildren(ctx);
 	return 0;
 }
@@ -21,25 +31,41 @@ antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ct
 	BasicBlock* bb_then=cfg.create_bb();
 	BasicBlock* bb_else=cfg.create_bb();
 	BasicBlock* bb_endif=cfg.create_bb();
+
 	BasicBlock* cur_bb=cfg.get_current_bb();
+	
+	bb_then->exit_true=bb_endif;
+	bb_then->exit_false=bb_endif;
+
+	bb_else->exit_true=bb_endif;
+	bb_else->exit_false=bb_endif;
+	
+	bb_endif->exit_true=cur_bb->exit_true;
+	bb_endif->exit_false=cur_bb->exit_false;
+
 	cur_bb->exit_true=bb_then;
 	cur_bb->exit_false=bb_else;
 
 	if(ctx->expression()!=nullptr){
 		visit(ctx->expression());
 
+		vector<string> p;
+		p.push_back("!reg");
+		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
+
+		cfg.add_bb(bb_then);	
 		cfg.set_current_bb(bb_then);
 		visit(ctx->ifepxr(0));
 		
-
-		if(ctx->ifepxr(1)!=nullptr){
+		cfg.add_bb(bb_else);
+		
+		if(ctx->ifepxr(1)!=nullptr){	
 			cfg.set_current_bb(bb_else);
 			visit(ctx->ifepxr(1));
 		}
-		
-		
 	}
 
+	cfg.add_bb(bb_endif);
 	cfg.set_current_bb(bb_endif);
 	return 0;
 }

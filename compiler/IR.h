@@ -42,7 +42,8 @@ class IRInstr {
 		cmp_lt,
 		cmp_le,
 		cmp_gt,
-		cmp_ge
+		cmp_ge,
+		cmp_z
 	} Operation;
 
 
@@ -61,6 +62,45 @@ class IRInstr {
 };
 
 
+
+
+
+/** The class for the control flow graph, also includes the symbol table */
+
+/* A few important comments:
+	 The entry block is the one with the same label as the AST function name.
+	   (it could be the first of bbs, or it could be defined by an attribute value)
+	 The exit block is the one with both exit pointers equal to nullptr.
+     (again it could be identified in a more explicit way)
+
+ */
+class CFG {
+ public:
+	CFG(SymbolTable& sym) : symbols(sym), nextBBnumber(0) {}
+	
+	virtual BasicBlock* create_bb() = 0;
+	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) = 0;
+
+	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
+	virtual void gen_asm(ostream& o) = 0;
+	virtual string IR_reg_to_asm(string reg) = 0; /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
+	virtual void gen_asm_prologue(ostream& o) = 0;
+	virtual void gen_asm_epilogue(ostream& o) = 0;
+
+	virtual void set_current_bb(BasicBlock* bb)=0;
+	virtual BasicBlock* get_current_bb()=0;
+	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
+	virtual void add_bb(BasicBlock* newBB) = 0;
+
+
+ protected:
+	BasicBlock* current_bb;
+
+	SymbolTable& symbols; /**<the symbol table  */
+	int nextBBnumber; /**< just for naming */
+	
+	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
+};
 
 
 
@@ -93,8 +133,9 @@ Possible optimization:
 
 class BasicBlock {
  public:
-	BasicBlock(CFG* cfg_, string entry_label) : cfg(cfg_), label(entry_label) {}
+	BasicBlock(CFG* cfg_, string entry_label) : cfg(cfg_), label(entry_label), exit_true(nullptr),exit_false(nullptr) {}
 	void gen_asm(ostream &o){
+		o<<label<<':'<<endl;
 		vector<IRInstr*>::iterator it;
 		for(it=instrs.begin();it!=instrs.end();it++) {
 			(*it)->gen_asm(o);
@@ -119,43 +160,6 @@ class BasicBlock {
  
 };
 
-
-
-
-/** The class for the control flow graph, also includes the symbol table */
-
-/* A few important comments:
-	 The entry block is the one with the same label as the AST function name.
-	   (it could be the first of bbs, or it could be defined by an attribute value)
-	 The exit block is the one with both exit pointers equal to nullptr.
-     (again it could be identified in a more explicit way)
-
- */
-class CFG {
- public:
-	CFG(SymbolTable& sym) : symbols(sym) {}
-	
-	virtual BasicBlock* create_bb() = 0;
-	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) = 0;
-
-	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
-	virtual void gen_asm(ostream& o) = 0;
-	virtual string IR_reg_to_asm(string reg) = 0; /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
-	virtual void gen_asm_prologue(ostream& o) = 0;
-	virtual void gen_asm_epilogue(ostream& o) = 0;
-
-	virtual void set_current_bb(BasicBlock* bb)=0;
-	virtual BasicBlock* get_current_bb()=0;
-	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
-
- protected:
-	BasicBlock* current_bb;
-
-	SymbolTable& symbols; /**<the symbol table  */
-	int nextBBnumber; /**< just for naming */
-	
-	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
-};
 
 
 #endif

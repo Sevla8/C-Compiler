@@ -104,6 +104,9 @@ void IRInstrx86::gen_asm(ostream &o)
         o << opstring << " %bl\n";
         o << "movzbl %bl, " << cfg->IR_reg_to_asm(params[0]) << "\n";
         break;
+    case Operation::cmp_z:
+        o<<"cmpl $0, "<<cfg->IR_reg_to_asm(params[0])<<"\n";
+        break;
     case Operation::rmem:
         break;
     case Operation::wmem:
@@ -119,9 +122,11 @@ BasicBlock * CFGx86::create_bb()
 {
     BasicBlock *bb = new BasicBlock(this, string("block") + to_string(nextBBnumber));
     // current_bb = bb;
-    bbs.push_back(bb);
-    ++nextBBnumber;
+    ++nextBBnumber;    
     return bb;
+}
+void CFGx86::add_bb(BasicBlock* newBB){
+    bbs.push_back(newBB);
 }
 
 void CFGx86::set_current_bb(BasicBlock* bb){
@@ -134,10 +139,10 @@ BasicBlock* CFGx86::get_current_bb(){
 
 void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o){
     if(exit_true!=nullptr){
-        o<<"je "<<exit_true->label<<'\n';
+        o<<"jne "<<exit_true->label<<'\n';
     }
     if(exit_false!=nullptr){
-        o<<"jne "<<exit_false->label<<'\n';
+        o<<"je "<<exit_false->label<<'\n';
     }
 }
 

@@ -5,7 +5,11 @@ axiom : prog ;
 prog : 'int' 'main' '(' ')' '{' instruction* RETURN expression ';' '}' ;
 
 instruction : (declaration | expression) ';';
-declaration : TYPE IDENTIFIER (EQ expression)?;
+declaration : TYPE decllist;
+
+decllist : declstatement ',' decllist | declstatement;
+declstatement : IDENTIFIER (EQ expression)?;
+
 expression : '(' expression ')' #prio1
 | (U_PRIO_2|BU_PRIO_2_4) expression #prio2
 | expression B_PRIO_3 expression #prio3

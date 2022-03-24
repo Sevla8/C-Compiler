@@ -1,6 +1,6 @@
 #include "VariableAnalyserVisitor.h"
 
-antlrcpp::Any VariableAnalyserVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx) {
+antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (ctx->expression()!=nullptr) {
 		visit(ctx->expression());
 	}	

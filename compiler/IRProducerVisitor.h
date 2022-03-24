@@ -16,7 +16,7 @@ public:
 
   virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
-  virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
+  virtual antlrcpp::Any visitDeclstatement(ifccParser::DeclstatementContext *ctx) override;
 
   virtual antlrcpp::Any visitValue(ifccParser::ValueContext *ctx) override;
 

@@ -11,7 +11,7 @@ class  VariableAnalyserVisitor : public ifccBaseVisitor {
 public:
   VariableAnalyserVisitor(SymbolTable& sym) : symbols(sym) {}
 
-  virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
+  virtual antlrcpp::Any visitDeclstatement(ifccParser::DeclstatementContext *ctx) override;
 
   virtual antlrcpp::Any visitVarvalue(ifccParser::VarvalueContext *ctx) override;
 

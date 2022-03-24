@@ -14,7 +14,7 @@ antlrcpp::Any IRProducerVisitor::visitProg(ifccParser::ProgContext *ctx)
 	return 0;
 }
 
-antlrcpp::Any IRProducerVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx) {
+antlrcpp::Any IRProducerVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (ctx->expression()!=nullptr) {
 		visit(ctx->expression());
 		int offset = symbols.get(ctx->IDENTIFIER()->getText()).getOffset();

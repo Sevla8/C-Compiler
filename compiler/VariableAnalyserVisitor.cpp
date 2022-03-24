@@ -1,6 +1,6 @@
 #include "VariableAnalyserVisitor.h"
 
-antlrcpp::Any VariableAnalyserVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx) {
+antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (symbols.exists(ctx->IDENTIFIER()->getText())) {
 		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" already declared here.\n";
 		errors += 1;

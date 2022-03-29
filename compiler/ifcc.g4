@@ -2,14 +2,22 @@ grammar ifcc;
 
 axiom : prog ;
 
-prog : function*;
+prog : function+;
 
-function : (TYPE | 'void') IDENTIFIER '(' arguments? ')' '{' instruction* RETURN expression ';' '}' ;
+function : (TYPE | 'void') IDENTIFIER '(' arguments? ')' block ;
 
 arguments : arguments ',' arguments #funcsplit
-| expression #funcarg;
+| TYPE IDENTIFIER #funcarg;
 
-instruction : (declaration | expression) ';';
+block :'{' (instruction | condition | loop | block)* (RETURN expression ';')* '}'  ;
+
+condition : 'if' '(' expression ')' branch ('else' branch)? ;
+
+branch : expression? ';' | block | condition | loop;
+
+loop: 'while' '(' expression ')' branch;
+
+instruction : (declaration | expression)? ';';
 declaration : TYPE IDENTIFIER (EQ expression)?;
 expression : '(' expression ')' #prio1
 | BU_PRIO_2_4 expression #prio2

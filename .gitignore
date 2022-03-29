@@ -4,3 +4,4 @@ compiler/generated/**
 compiler/ifcc
 compiler/.antlr/**
 tests/ifcc-test-output/**
+.vscode

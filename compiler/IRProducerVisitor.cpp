@@ -12,6 +12,15 @@ antlrcpp::Any IRProducerVisitor::visitProg(ifccParser::ProgContext *ctx)
 	return 0;
 }
 
+antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
+	int previous_block=block_visited;
+	block_visited++;
+	symbols.setCurrentBlock(block_visited);
+	visitChildren(ctx);
+	symbols.setCurrentBlock(previous_block);
+	return 0;
+}
+
 antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ctx)
 {
 	BasicBlock* bb_then=cfg.create_bb();

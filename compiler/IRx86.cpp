@@ -4,6 +4,7 @@ using namespace std;
 
 void IRInstrx86::gen_asm(ostream &o)
 {
+    cfg->get_table().setCurrentBlock(num_block);
     string tmp("%ebx");
     string opstring;
     switch (op)
@@ -150,11 +151,13 @@ void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &
     }
     
 }
-
+SymbolTable& CFGx86::get_table(){
+    return symbols;
+}
 
 void CFGx86::add_IRInstr_to_current(IRInstr::Operation op, vector<string> &params)
 {
-    IRInstr *instr = new IRInstrx86(this, current_bb, op, params);
+    IRInstr *instr = new IRInstrx86(this, current_bb, op, params,symbols.getCurrentBlock());
     current_bb->add_IRInstr(instr);
 }
 
@@ -171,13 +174,15 @@ void CFGx86::gen_asm(ostream &o)
 }
 string CFGx86::IR_reg_to_asm(string reg)
 {
+    
     if (reg == "!reg")
     {
         return string("%eax");
     }
-    else if (symbols.exists(reg))
+    else if (symbols.exists(reg)!=-1)
     {
-        return string("-") + to_string(symbols.get(reg).getOffset()) + string("(%rbp)");
+        std::pair<std::string,int> id=make_pair(reg,symbols.exists(reg));
+        return string("-") + to_string(symbols.get(id).getOffset()) + string("(%rbp)");
     }
     else
     {

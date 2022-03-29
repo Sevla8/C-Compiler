@@ -17,6 +17,8 @@ public:
 
   virtual antlrcpp::Any visitPrio14(ifccParser::Prio14Context *ctx) override;
 
+  virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
+
   int getErrors();
 
 protected:

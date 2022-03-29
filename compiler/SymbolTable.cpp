@@ -1,19 +1,38 @@
 #include "SymbolTable.h"
+#include <iostream>
 
 using namespace std;
 
-bool SymbolTable::exists(std::string id) {
-	return symbols.find(id)!=symbols.end();
+// Modifier pour regarder dans les blocs parents 
+bool SymbolTable::existCurrent(std::string id, int blockNum) {
+	std::pair<std::string, int> pair_id=make_pair(id,blockNum);
+	return symbols.find(pair_id)!=symbols.end();
 }
 
-void SymbolTable::add(std::string id) {
-	VDescriptor vd(var_count*4);
+int SymbolTable::exists(std::string id) {
+	int parent=currentBlock;
+	int res=-1;
+	while(parent!=0){
+		if(existCurrent(id,parent)){
+			res=parent;
+
+			break;
+		}
+	
+		parent=blockTree.at(parent);
+	}
+	return res;
+}
+
+void SymbolTable::add(string id) {
+	VDescriptor vd(var_count*4,currentBlock);
 	++var_count;
-	symbols.insert(make_pair(id, vd));
+	std::pair<std::string, int> pair_id=make_pair(id,currentBlock);
+	symbols.insert(make_pair(pair_id, vd));
 }
 
-VDescriptor& SymbolTable::get(std::string id) {
-	std::map<std::string, VDescriptor>::iterator it;
+VDescriptor& SymbolTable::get(std::pair<std::string, int> id) {
+	std::map<std::pair<std::string, int>, VDescriptor>::iterator it;
 	it = symbols.find(id);
 	return it->second;
 }
@@ -31,4 +50,21 @@ string SymbolTable::getTempVariable() {
 void SymbolTable::clearTempVariable() {
 	var_count -= tmp_count;
 	tmp_count = 0;
+}
+
+void SymbolTable::addBlock(){
+	int parent=currentBlock;
+	currentBlock=blockTree.size()+1;
+	blockTree.insert(make_pair(currentBlock,parent));
+}
+
+void SymbolTable::setCurrentBlock(int numBlock){
+	currentBlock=numBlock;
+}
+
+int SymbolTable::getCurrentBlock(){
+	return currentBlock;
+}
+std::map<int, int> SymbolTable::getBlockTree(){
+	return blockTree;
 }

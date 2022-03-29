@@ -46,11 +46,14 @@ public:
 
   virtual antlrcpp::Any visitPrio10(ifccParser::Prio10Context *ctx) override;
 
+  virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
+
   int getErrors();
 
 protected:
   SymbolTable& symbols;
   CFG& cfg;
   int errors = 0;
+  int block_visited=0;
 };
 

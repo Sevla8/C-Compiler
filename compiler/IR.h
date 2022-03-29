@@ -48,7 +48,7 @@ class IRInstr {
 
 
 	/**  constructor */
-	IRInstr(CFG* cfg_, BasicBlock* bb_, Operation op_, vector<string>& params_) : cfg(cfg_), bb(bb_), op(op_), params(params_) {}
+	IRInstr(CFG* cfg_, BasicBlock* bb_, Operation op_, vector<string>& params_,int num_block) : cfg(cfg_), bb(bb_), op(op_), params(params_),num_block(num_block) {}
 	
 	/** Actual code generation */
 	virtual void gen_asm(ostream &o) = 0; /**< x86 assembly code generation for this IR instruction */
@@ -58,6 +58,7 @@ class IRInstr {
 	BasicBlock* bb;
 	Operation op;
 	vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
+	int num_block;
 	// if you subclass IRInstr, each IRInstr subclass has its parameters and the previous (very important) comment becomes useless: it would be a better design. 
 };
 
@@ -91,6 +92,8 @@ class CFG {
 	virtual BasicBlock* get_current_bb()=0;
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
 	virtual void add_bb(BasicBlock* newBB) = 0;
+	virtual SymbolTable& get_table()=0;
+
 
 
  protected:

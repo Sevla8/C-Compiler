@@ -9,15 +9,15 @@ function : (TYPE | 'void') IDENTIFIER '(' arguments? ')' block ;
 arguments : arguments ',' arguments #funcsplit
 | TYPE IDENTIFIER #funcarg;
 
-block :'{' (instruction | condition | loop | block)* (RETURN expression ';')* '}'  ;
+block :'{' (declaration ';' | branch)* '}'  ;
 
 condition : 'if' '(' expression ')' branch ('else' branch)? ;
 
-branch : expression? ';' | block | condition | loop;
+branch : instruction | block | condition | loop;
 
 loop: 'while' '(' expression ')' branch;
 
-instruction : (declaration | expression)? ';';
+instruction : RETURN? expression? ';';
 declaration : TYPE decllist;
 
 decllist : declstatement ',' decllist | declstatement;
@@ -61,6 +61,6 @@ RETURN : 'return';
 TYPE : 'int';
 IDENTIFIER : [A-Za-z_][A-Za-z0-9_]*;
 CONST : [0-9]+ ;
-COMMENT : '/*' .*? '*/' -> skip ;
+COMMENT : (('/*' .*? '*/')| ('//' .*? '\n')) -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;
 WS    : [ \t\r\n] -> channel(HIDDEN);

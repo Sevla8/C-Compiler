@@ -15,6 +15,8 @@ public:
   IRProducerVisitor(map<string,CFG*>& cfg) : cfgTable(cfg) {}
 
   virtual antlrcpp::Any visitFunction(ifccParser::FunctionContext *ctx) override;
+  
+  virtual antlrcpp::Any visitInstruction(ifccParser::InstructionContext *ctx) override;
 
   virtual antlrcpp::Any visitCondition(ifccParser::ConditionContext *ctx) override;
 
@@ -50,6 +52,8 @@ public:
 
   virtual antlrcpp::Any visitPrio10(ifccParser::Prio10Context *ctx) override;
 
+  virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
+
   int getErrors();
 
 protected:
@@ -58,5 +62,6 @@ protected:
   SymbolTable* symbols;
   vector<string>* params;
   int errors = 0;
+  int block_visited=0;
 };
 

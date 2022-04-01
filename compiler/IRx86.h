@@ -15,7 +15,7 @@ using namespace std;
 class IRInstrx86 : public IRInstr{
  
   public:
-  IRInstrx86(CFG* cfg_, BasicBlock* bb_, Operation op_, vector<string>& params_) : IRInstr(cfg_, bb_, op_, params_) {}
+  IRInstrx86(CFG* cfg_, BasicBlock* bb_, Operation op_, vector<string>& params_,int num_block) : IRInstr(cfg_, bb_, op_, params_,num_block) {}
 
 	/** Actual code generation */
 	virtual void gen_asm(ostream &o);
@@ -29,9 +29,10 @@ class CFGx86 : public CFG {
 	CFGx86() {}
 	
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o);
+	virtual SymbolTable& get_table();
+	virtual void jump_to_epilogue(ostream &o);
 
-
-  virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params);
+	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params);
 
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
 	virtual void gen_asm(ostream& o);

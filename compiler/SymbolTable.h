@@ -11,18 +11,26 @@ using namespace std;
 
 class SymbolTable {
 public:
-  bool exists(std::string id);
+  int exists(string id);
   void variablesNotUsed();
-  void add(std::string id);
-  VDescriptor& get(std::string id);
+  void add(string id);
+  VDescriptor& get(pair<string, int> id);
   string getTempVariable();
   void clearTempVariable();
   int getMaxStackSize();
+  void addBlock();
+  void setCurrentBlock(int numBlock);
+  int getCurrentBlock();
+  map<int, int> getBlockTree();
+  bool existCurrent(string id,int blockNum);
+
 
 protected:
-  std::map<std::string, VDescriptor> symbols;
+  map<pair<string, int>, VDescriptor> symbols;
   int var_count = 1;
   int tmp_count = 0;
   int max_tmp = 0;
+  int currentBlock = 0;
+  map<int, int> blockTree;
 };
 

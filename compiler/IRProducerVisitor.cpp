@@ -4,6 +4,7 @@ using namespace std;
 
 antlrcpp::Any IRProducerVisitor::visitFunction(ifccParser::FunctionContext *ctx)
 {
+	block_visited = 0;
 	cfg = cfgTable.find(ctx->IDENTIFIER()->getText())->second;
 	symbols = &cfg->get_table();
 	BasicBlock* first_bb=cfg->create_bb();
@@ -11,6 +12,24 @@ antlrcpp::Any IRProducerVisitor::visitFunction(ifccParser::FunctionContext *ctx)
 
 	cfg->set_current_bb(first_bb);
 	visitChildren(ctx);
+	return 0;
+}
+
+antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
+	int previous_block=block_visited;
+	block_visited++;
+	symbols->setCurrentBlock(block_visited);
+	visitChildren(ctx);
+	symbols->setCurrentBlock(previous_block);
+	return 0;
+}
+
+antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext *ctx) {
+	visitChildren(ctx);
+	if (ctx->RETURN() != nullptr) {
+		vector<string> p;
+		cfg->add_IRInstr_to_current(IRInstr::Operation::ret,p);
+	}
 	return 0;
 }
 

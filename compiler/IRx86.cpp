@@ -6,6 +6,7 @@ string REGCALL[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
 
 void IRInstrx86::gen_asm(ostream &o)
 {
+    cfg->get_table().setCurrentBlock(num_block);
     string tmp("%ebx");
     string opstring;
     int i;
@@ -128,9 +129,17 @@ void IRInstrx86::gen_asm(ostream &o)
         }
         o<<"call "<<params[0]<<"\n";
         break;
+    case Operation::ret:
+        cfg->jump_to_epilogue(o);
+
+        break;
     default:
         break;
     }
+}
+
+void CFGx86::jump_to_epilogue(ostream &o){
+    o<<"jmp "<<name<<".epilogue \n";
 }
 
 void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o){
@@ -146,11 +155,13 @@ void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &
     }
     
 }
-
+SymbolTable& CFGx86::get_table(){
+    return symbols;
+}
 
 void CFGx86::add_IRInstr_to_current(IRInstr::Operation op, vector<string> &params)
 {
-    IRInstr *instr = new IRInstrx86(this, current_bb, op, params);
+    IRInstr *instr = new IRInstrx86(this, current_bb, op, params,symbols.getCurrentBlock());
     current_bb->add_IRInstr(instr);
 }
 
@@ -165,21 +176,24 @@ void CFGx86::gen_asm(ostream &o)
     }
     gen_asm_epilogue(o);
 }
+
 string CFGx86::IR_reg_to_asm(string reg)
 {
     if (reg == "!reg")
     {
         return string("%eax");
     }
-    else if (symbols.exists(reg))
+    else if (symbols.exists(reg)!=-1)
     {
-        return string("-") + to_string(symbols.get(reg).getOffset()) + string("(%rbp)");
+        std::pair<std::string,int> id=make_pair(reg,symbols.exists(reg));
+        return string("-") + to_string(symbols.get(id).getOffset()) + string("(%rbp)");
     }
     else
     {
         return string("-") + reg + string("(%rbp)");
     }
 }
+
 void CFGx86::gen_asm_prologue(ostream &o)
 {
     int i;
@@ -187,6 +201,7 @@ void CFGx86::gen_asm_prologue(ostream &o)
          " "<<name<<": \n"
          " 	pushq  %rbp\n"
          " 	movq   %rsp, %rbp\n";
+    symbols.setCurrentBlock(1);
     for (i=0; i<params.size(); ++i) {
         o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i])<<"\n";
     }
@@ -196,9 +211,11 @@ void CFGx86::gen_asm_prologue(ostream &o)
     }
     o<<"subq $"<<offset<<", %rsp\n";
 }
+
 void CFGx86::gen_asm_epilogue(ostream &o)
 {
-    o << " 	leave\n"
+    o << name <<".epilogue:\n"
+         " 	leave\n"
          " 	ret\n";
 }
 

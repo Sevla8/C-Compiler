@@ -1,33 +1,52 @@
 #include "SymbolTable.h"
+#include <iostream>
 
 using namespace std;
 
-bool SymbolTable::exists(std::string id) {
-	return symbols.find(id)!=symbols.end();
+// Modifier pour regarder dans les blocs parents 
+bool SymbolTable::existCurrent(string id, int blockNum) {
+	pair<string, int> pair_id=make_pair(id,blockNum);
+	return symbols.find(pair_id)!=symbols.end();
 }
 
 void SymbolTable::variablesNotUsed() {
-	std::map<std::string, VDescriptor>::iterator p;
+	map<pair<string, int>, VDescriptor>::iterator p;
 	for(p = symbols.begin(); p != symbols.end(); p++)
   	{
 		
 		if (!p->second.getUsed())
 		{
-			cerr << "WARNING! Variable '" << p->first <<"' declared but never used.\n";
+			cerr << "WARNING! Variable '" << p->first.first <<"' declared but never used.\n";
 		}
 		
   	}
 	return ;
 }
 
-void SymbolTable::add(std::string id) {
-	VDescriptor vd(var_count*4);
-	++var_count;
-	symbols.insert(make_pair(id, vd));
+int SymbolTable::exists(string id) {
+	int parent=currentBlock;
+	int res=-1;
+	while(parent!=0){
+		if(existCurrent(id,parent)){
+			res=parent;
+
+			break;
+		}
+	
+		parent=blockTree.at(parent);
+	}
+	return res;
 }
 
-VDescriptor& SymbolTable::get(std::string id) {
-	std::map<std::string, VDescriptor>::iterator it;
+void SymbolTable::add(string id) {
+	VDescriptor vd(var_count*4,currentBlock);
+	++var_count;
+	pair<string, int> pair_id=make_pair(id,currentBlock);
+	symbols.insert(make_pair(pair_id, vd));
+}
+
+VDescriptor& SymbolTable::get(pair<string, int> id) {
+	map<pair<string, int>, VDescriptor>::iterator it;
 	it = symbols.find(id);
 	return it->second;
 }
@@ -49,4 +68,21 @@ void SymbolTable::clearTempVariable() {
 
 int SymbolTable::getMaxStackSize() {
 	return (var_count+max_tmp)*4;
+}
+
+void SymbolTable::addBlock(){
+	int parent=currentBlock;
+	currentBlock=blockTree.size()+1;
+	blockTree.insert(make_pair(currentBlock,parent));
+}
+
+void SymbolTable::setCurrentBlock(int numBlock){
+	currentBlock=numBlock;
+}
+
+int SymbolTable::getCurrentBlock(){
+	return currentBlock;
+}
+map<int, int> SymbolTable::getBlockTree(){
+	return blockTree;
 }

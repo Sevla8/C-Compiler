@@ -7,10 +7,15 @@ antlrcpp::Any VariableAnalyserVisitor::visitFunction(ifccParser::FunctionContext
 	vector<string>* previous = params;
 	params = &p;
 	symbols = &cfg->get_table();
-	visitChildren(ctx);
+	if (ctx->arguments()!=nullptr) {
+		symbols->setCurrentBlock(1);
+		visit(ctx->arguments());
+		symbols->setCurrentBlock(0);
+	}
 	cfg->specify_function(ctx->IDENTIFIER()->getText(), p);
 	cfgTable.insert(make_pair(ctx->IDENTIFIER()->getText(),cfg));
 	params = previous;
+	visit(ctx->block());
 	return 0;
 }
 
@@ -25,7 +30,7 @@ antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::Declstatem
 	if (ctx->expression()!=nullptr) {
 		visit(ctx->expression());
 	}	
-	if (symbols->exists(ctx->IDENTIFIER()->getText())) {
+	if (symbols->existCurrent(ctx->IDENTIFIER()->getText(),symbols->getCurrentBlock())) {
 		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" already declared here.\n";
 		errors += 1;
 	} else {
@@ -35,12 +40,13 @@ antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::Declstatem
 }
 
 antlrcpp::Any VariableAnalyserVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx) {
-	if (!symbols->exists(ctx->IDENTIFIER()->getText())) {
+	int res=symbols->exists(ctx->IDENTIFIER()->getText());
+	if (res==-1) {
 		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" not declared.\n";
 		errors += 1;
 	}else{
 		//cerr << ctx->IDENTIFIER()->getText();
-		symbols->get(ctx->IDENTIFIER()->getText()).setUsed(true);
+		symbols->get(make_pair(ctx->IDENTIFIER()->getText(),res)).setUsed(true);
 	}  
 	return 0;
 }
@@ -55,13 +61,21 @@ antlrcpp::Any VariableAnalyserVisitor::visitCall(ifccParser::CallContext *ctx) {
 
 antlrcpp::Any VariableAnalyserVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	visit(ctx->expression());
-	if (!symbols->exists(ctx->IDENTIFIER()->getText())) {
+	int res=symbols->exists(ctx->IDENTIFIER()->getText());
+	if (res==-1) {
 		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" not declared.\n";
 		errors += 1;
 	}
 	return 0;
 }
 
+antlrcpp::Any VariableAnalyserVisitor::visitBlock(ifccParser::BlockContext *ctx) {
+	symbols->addBlock();
+	visitChildren(ctx);
+	symbols->setCurrentBlock(symbols->getBlockTree().at(symbols->getCurrentBlock()));
+	
+	return 0;
+}
 
 int VariableAnalyserVisitor::getErrors() {
 	return errors;

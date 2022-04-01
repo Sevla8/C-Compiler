@@ -45,12 +45,13 @@ class IRInstr {
 		cmp_le,
 		cmp_gt,
 		cmp_ge,
-		cmp_z
+		cmp_z,
+		ret
 	} Operation;
 
 
 	/**  constructor */
-	IRInstr(CFG* cfg_, BasicBlock* bb_, Operation op_, vector<string>& params_) : cfg(cfg_), bb(bb_), op(op_), params(params_) {}
+	IRInstr(CFG* cfg_, BasicBlock* bb_, Operation op_, vector<string>& params_,int num_block) : cfg(cfg_), bb(bb_), op(op_), params(params_),num_block(num_block) {}
 	
 	/** Actual code generation */
 	virtual void gen_asm(ostream &o) = 0; /**< x86 assembly code generation for this IR instruction */
@@ -60,6 +61,7 @@ class IRInstr {
 	BasicBlock* bb;
 	Operation op;
 	vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
+	int num_block;
 	// if you subclass IRInstr, each IRInstr subclass has its parameters and the previous (very important) comment becomes useless: it would be a better design. 
 };
 
@@ -96,6 +98,7 @@ class CFG {
 	void add_bb(BasicBlock* newBB);
 	SymbolTable& get_table();
 	string get_name();
+	virtual void jump_to_epilogue(ostream &o)=0;
 
  protected:
 	string name;
@@ -120,6 +123,7 @@ class DummyCFG : public CFG {
 	virtual void gen_asm_prologue(ostream& o) {}
 	virtual void gen_asm_epilogue(ostream& o) {}
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o) {}
+	virtual void jump_to_epilogue(ostream &o) {}
 };
 
 
@@ -162,7 +166,7 @@ class BasicBlock {
 	string label; /**< label of the BB, also will be the label in the generated code */
 	CFG* cfg; /** < the CFG where this block belongs */
 	vector<IRInstr*> instrs; /** < the instructions themselves. */
-  string test_var_name;  /** < when generating IR code for an if(expr) or while(expr) etc,
+  	string test_var_name;  /** < when generating IR code for an if(expr) or while(expr) etc,
 													 store here the name of the variable that holds the value of expr */
  protected:
 

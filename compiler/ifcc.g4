@@ -5,7 +5,7 @@ axiom : prog ;
 prog : 'int' 'main' '(' ')' '{' instruction* RETURN expression ';' '}' ;
 
 instruction : (declaration | expression) ';';
-declaration : TYPE decllist;
+declaration : type=('int' | 'char') decllist;
 
 decllist : declstatement ',' decllist | declstatement;
 declstatement : IDENTIFIER (EQ expression)?;
@@ -41,7 +41,6 @@ B_PRIO_11 : '&&';
 B_PRIO_12 : '||';
 B_PRIO_14 : '+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|=';
 RETURN : 'return';
-TYPE : 'int';
 IDENTIFIER : [A-Za-z_][A-Za-z0-9_]*;
 CONST : [0-9]+ ;
 COMMENT : '/*' .*? '*/' -> skip ;

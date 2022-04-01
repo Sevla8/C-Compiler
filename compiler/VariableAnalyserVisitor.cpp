@@ -8,7 +8,7 @@ antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::Declstatem
 		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" already declared here.\n";
 		errors += 1;
 	} else {
-		symbols.add(ctx->IDENTIFIER()->getText());
+		symbols.add(ctx->IDENTIFIER()->getText(), ctx->type->getText());
 	}
 	return 0;
 }
@@ -19,6 +19,7 @@ antlrcpp::Any VariableAnalyserVisitor::visitVarvalue(ifccParser::VarvalueContext
 		errors += 1;
 	}else{
 		//cerr << ctx->IDENTIFIER()->getText();
+		symbols.add(ctx->IDENTIFIER()->getText(),ctx->type->getText());
 		symbols.get(ctx->IDENTIFIER()->getText()).setUsed(true);
 	}  
 	return 0;

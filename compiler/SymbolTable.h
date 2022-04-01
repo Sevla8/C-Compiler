@@ -13,7 +13,7 @@ class SymbolTable {
 public:
   bool exists(std::string id);
   void variablesNotUsed();
-  void add(std::string id);
+  void add(std::string id, std::string type);
   VDescriptor& get(std::string id);
   string getTempVariable();
   void clearTempVariable();

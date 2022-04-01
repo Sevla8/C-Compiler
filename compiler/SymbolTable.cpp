@@ -20,8 +20,14 @@ void SymbolTable::variablesNotUsed() {
 	return ;
 }
 
-void SymbolTable::add(std::string id) {
-	VDescriptor vd(var_count*4);
+void SymbolTable::add(std::string id, std::string type) {
+	VDescriptor::TYPE t;
+	if(type == "int"){
+		t = VDescriptor::TYPE::tint;
+	}else if(type == "char"){
+		t = VDescriptor::TYPE::tchar;
+	}
+	VDescriptor vd ((int)(var_count*4), t);
 	++var_count;
 	symbols.insert(make_pair(id, vd));
 }

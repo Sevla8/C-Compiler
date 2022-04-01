@@ -134,7 +134,7 @@ class BasicBlock {
  */
 class CFG {
  public:
-	CFG(SymbolTable& sym) : symbols(sym) {}
+	CFG(SymbolTable& sym) : symbols(sym), nextBBnumber(0) {}
 	
 	virtual void create_bb() = 0;
 	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) = 0;

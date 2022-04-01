@@ -1,5 +1,7 @@
 #include "IRProducerVisitor.h"
 
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+
 using namespace std;
 
 antlrcpp::Any IRProducerVisitor::visitProg(ifccParser::ProgContext *ctx)

@@ -12,7 +12,7 @@ branch : instruction | block | condition | loop;
 
 loop: 'while' '(' expression ')' branch;
 
-instruction : (RETURN? expression)? ';';
+instruction : RETURN? expression? ';';
 
 declaration : TYPE IDENTIFIER (EQ expression)?;
 expression : '(' expression ')' #prio1

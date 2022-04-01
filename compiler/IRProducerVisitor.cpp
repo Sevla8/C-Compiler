@@ -21,6 +21,15 @@ antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 	return 0;
 }
 
+antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext *ctx) {
+	visitChildren(ctx);
+	if (ctx->RETURN() != nullptr) {
+		vector<string> p;
+		cfg.add_IRInstr_to_current(IRInstr::Operation::ret,p);
+	}
+	return 0;
+}
+
 antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ctx)
 {
 	BasicBlock* bb_then=cfg.create_bb();

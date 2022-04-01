@@ -43,7 +43,8 @@ class IRInstr {
 		cmp_le,
 		cmp_gt,
 		cmp_ge,
-		cmp_z
+		cmp_z,
+		ret
 	} Operation;
 
 
@@ -91,6 +92,7 @@ class CFG {
 	virtual void set_current_bb(BasicBlock* bb)=0;
 	virtual BasicBlock* get_current_bb()=0;
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
+	virtual void jump_to_epilogue(ostream &o)=0;
 	virtual void add_bb(BasicBlock* newBB) = 0;
 	virtual SymbolTable& get_table()=0;
 
@@ -156,7 +158,7 @@ class BasicBlock {
 	string label; /**< label of the BB, also will be the label in the generated code */
 	CFG* cfg; /** < the CFG where this block belongs */
 	vector<IRInstr*> instrs; /** < the instructions themselves. */
-  string test_var_name;  /** < when generating IR code for an if(expr) or while(expr) etc,
+  	string test_var_name;  /** < when generating IR code for an if(expr) or while(expr) etc,
 													 store here the name of the variable that holds the value of expr */
  protected:
 

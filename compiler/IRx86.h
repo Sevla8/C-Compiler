@@ -34,8 +34,9 @@ class CFGx86 : public CFG {
 	virtual BasicBlock* get_current_bb();
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o);
 	virtual SymbolTable& get_table();
+	virtual void jump_to_epilogue(ostream &o);
 
-  virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params);
+	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params);
 
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
 	virtual void gen_asm(ostream& o);

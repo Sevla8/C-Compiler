@@ -114,6 +114,10 @@ void IRInstrx86::gen_asm(ostream &o)
         break;
     case Operation::call:
         break;
+    case Operation::ret:
+        cfg->jump_to_epilogue(o);
+
+        break;
     default:
         break;
     }
@@ -136,6 +140,10 @@ void CFGx86::set_current_bb(BasicBlock* bb){
 
 BasicBlock* CFGx86::get_current_bb(){
     return current_bb;
+}
+
+void CFGx86::jump_to_epilogue(ostream &o){
+    o<<"jmp epilogue \n";
 }
 
 void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o){
@@ -172,6 +180,7 @@ void CFGx86::gen_asm(ostream &o)
     }
     gen_asm_epilogue(o);
 }
+
 string CFGx86::IR_reg_to_asm(string reg)
 {
     
@@ -189,6 +198,7 @@ string CFGx86::IR_reg_to_asm(string reg)
         return string("-") + reg + string("(%rbp)");
     }
 }
+
 void CFGx86::gen_asm_prologue(ostream &o)
 {
     o << ".globl	main\n"
@@ -196,8 +206,10 @@ void CFGx86::gen_asm_prologue(ostream &o)
          " 	pushq  %rbp\n"
          " 	movq   %rsp, %rbp\n";
 }
+
 void CFGx86::gen_asm_epilogue(ostream &o)
 {
-    o << " 	popq   %rbp\n"
+    o << "epilogue:\n" //TODO changer pour chaque fonction
+         " 	popq   %rbp\n"
          " 	ret\n";
 }

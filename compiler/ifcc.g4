@@ -4,15 +4,16 @@ axiom : prog ;
 
 prog : 'int' 'main' '(' ')' block ;
 
-block :'{' (instruction | condition | loop | block)* (RETURN expression ';')* '}'  ;
+block :'{' (declaration ';' | branch)* '}'  ;
 
 condition : 'if' '(' expression ')' branch ('else' branch)? ;
 
-branch : expression? ';' | block | condition | loop;
+branch : instruction | block | condition | loop;
 
 loop: 'while' '(' expression ')' branch;
 
-instruction : (declaration | expression)? ';';
+instruction : (RETURN? expression)? ';';
+
 declaration : TYPE IDENTIFIER (EQ expression)?;
 expression : '(' expression ')' #prio1
 | BU_PRIO_2_4 expression #prio2

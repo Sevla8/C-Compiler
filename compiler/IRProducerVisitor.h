@@ -14,6 +14,9 @@ class  IRProducerVisitor : public ifccBaseVisitor {
 public:
   IRProducerVisitor(SymbolTable& sym, CFG& cfg_) : symbols(sym), cfg(cfg_) {}
 
+  
+  virtual antlrcpp::Any visitInstruction(ifccParser::InstructionContext *ctx) override;
+
   virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 
   virtual antlrcpp::Any visitCondition(ifccParser::ConditionContext *ctx) override;

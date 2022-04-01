@@ -1,5 +1,11 @@
 #include "VariableAnalyserVisitor.h"
 
+antlrcpp::Any VariableAnalyserVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx) {	
+	currentType=ctx->type->getText();
+	visitChildren(ctx);	
+	return 0;
+}
+
 antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (ctx->expression()!=nullptr) {
 		visit(ctx->expression());
@@ -8,7 +14,7 @@ antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::Declstatem
 		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" already declared here.\n";
 		errors += 1;
 	} else {
-		symbols.add(ctx->IDENTIFIER()->getText(), ctx->type->getText());
+		symbols.add(ctx->IDENTIFIER()->getText(), currentType);
 	}
 	return 0;
 }
@@ -19,7 +25,6 @@ antlrcpp::Any VariableAnalyserVisitor::visitVarvalue(ifccParser::VarvalueContext
 		errors += 1;
 	}else{
 		//cerr << ctx->IDENTIFIER()->getText();
-		symbols.add(ctx->IDENTIFIER()->getText(),ctx->type->getText());
 		symbols.get(ctx->IDENTIFIER()->getText()).setUsed(true);
 	}  
 	return 0;

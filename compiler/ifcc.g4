@@ -47,6 +47,6 @@ RETURN : 'return';
 TYPE : 'int';
 IDENTIFIER : [A-Za-z_][A-Za-z0-9_]*;
 CONST : [0-9]+ ;
-COMMENT : '/*' .*? '*/' -> skip ;
+COMMENT : (('/*' .*? '*/')| ('//' .*? '\n')) -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;
 WS    : [ \t\r\n] -> channel(HIDDEN);

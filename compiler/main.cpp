@@ -11,6 +11,7 @@
 #include "SymbolTable.h"
 #include "VariableAnalyserVisitor.h"
 #include "IRProducerVisitor.h"
+#include "IR.h"
 
 using namespace antlr4;
 using namespace std;
@@ -45,21 +46,35 @@ int main(int argn, const char **argv)
       exit(1);
   }
 
-  SymbolTable sym;
-  CFGx86 cfg(sym);
+  map<string,CFG*> functions;
+  CFGx86Factory factory;
 
-  VariableAnalyserVisitor vav(sym);
+  DummyCFG putchar, getchar;
+  vector<string> pcparams, gcparams;
+  pcparams.push_back("c");
+  putchar.specify_function("putchar@PLT", pcparams);
+  getchar.specify_function("getchar@PLT", gcparams);
+  functions.insert(make_pair("putchar", &putchar));
+  functions.insert(make_pair("getchar", &getchar));
+
+  VariableAnalyserVisitor vav(functions, &factory);
   vav.visit(tree);
 
   if (vav.getErrors()) {
       cerr << "error: syntax error during analyse" << endl;
       exit(1);
   }
-
-  IRProducerVisitor ipv(sym, cfg);
+  
+  IRProducerVisitor ipv(functions);
   ipv.visit(tree);
+  
+  map<string, CFG*>::iterator p;
 
-  cfg.gen_asm(cout);
+  for(p = functions.begin(); p != functions.end(); p++)
+{
+    p->second->gen_asm(cout);
+    p->second->get_table().variablesNotUsed();
+}
 
   return 0;
 }

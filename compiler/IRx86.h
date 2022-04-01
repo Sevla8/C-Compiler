@@ -26,12 +26,8 @@ class IRInstrx86 : public IRInstr{
 
 class CFGx86 : public CFG {
  public:
-	CFGx86(SymbolTable& sym) : CFG(sym) {}
+	CFGx86() {}
 	
-	virtual BasicBlock * create_bb();
-	virtual void add_bb(BasicBlock* newBB);
-	virtual void set_current_bb(BasicBlock* bb);
-	virtual BasicBlock* get_current_bb();
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o);
 
 
@@ -42,7 +38,14 @@ class CFGx86 : public CFG {
 	virtual string IR_reg_to_asm(string reg);
 	virtual void gen_asm_prologue(ostream& o);
 	virtual void gen_asm_epilogue(ostream& o);
-
  protected:
 };
 
+class CFGx86Factory : public CFGFactory {
+ public:
+	CFGx86Factory() {}
+	
+	virtual CFG* create();
+
+ protected:
+};

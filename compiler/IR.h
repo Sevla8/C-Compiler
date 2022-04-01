@@ -32,6 +32,8 @@ class IRInstr {
 		land,
 		lor,
 		lxor,
+		lnot,
+		cnot,
 		lsl, 
 		lsr, 
 		rmem,
@@ -76,9 +78,10 @@ class IRInstr {
  */
 class CFG {
  public:
-	CFG(SymbolTable& sym) : symbols(sym), nextBBnumber(0) {}
+	CFG() : nextBBnumber(0) {}
 	
-	virtual BasicBlock* create_bb() = 0;
+	void specify_function(string name, vector<string>& params);
+	BasicBlock* create_bb();
 	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) = 0;
 
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
@@ -87,22 +90,37 @@ class CFG {
 	virtual void gen_asm_prologue(ostream& o) = 0;
 	virtual void gen_asm_epilogue(ostream& o) = 0;
 
-	virtual void set_current_bb(BasicBlock* bb)=0;
-	virtual BasicBlock* get_current_bb()=0;
+	void set_current_bb(BasicBlock* bb);
+	BasicBlock* get_current_bb();
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
-	virtual void add_bb(BasicBlock* newBB) = 0;
-
+	void add_bb(BasicBlock* newBB);
+	SymbolTable& get_table();
+	string get_name();
 
  protected:
+	string name;
+	vector<string> params;
+	
 	BasicBlock* current_bb;
 
-	SymbolTable& symbols; /**<the symbol table  */
+	SymbolTable symbols; /**<the symbol table  */
 	int nextBBnumber; /**< just for naming */
 	
 	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
 };
 
+class DummyCFG : public CFG {
+ public:
+	DummyCFG() {}
+	
+	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) {}
 
+	virtual void gen_asm(ostream& o) {}
+	virtual string IR_reg_to_asm(string reg) {return string();}
+	virtual void gen_asm_prologue(ostream& o) {}
+	virtual void gen_asm_epilogue(ostream& o) {}
+	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o) {}
+};
 
 
 /**  The class for a basic block */
@@ -134,18 +152,9 @@ Possible optimization:
 class BasicBlock {
  public:
 	BasicBlock(CFG* cfg_, string entry_label) : cfg(cfg_), label(entry_label), exit_true(nullptr),exit_false(nullptr) {}
-	void gen_asm(ostream &o){
-		o<<label<<':'<<endl;
-		vector<IRInstr*>::iterator it;
-		for(it=instrs.begin();it!=instrs.end();it++) {
-			(*it)->gen_asm(o);
-		}
-		cfg->create_jumps(exit_true,exit_false,o);
-	}
+	void gen_asm(ostream &o);
 
-	void add_IRInstr(IRInstr* instr) {
-		instrs.push_back(instr);
-	}
+	void add_IRInstr(IRInstr* instr);
 
 	// No encapsulation whatsoever here. Feel free to do better.
 	BasicBlock* exit_true;  /**< pointer to the next basic block, true branch. If nullptr, return from procedure */ 
@@ -161,5 +170,13 @@ class BasicBlock {
 };
 
 
+class CFGFactory {
+ public:
+	CFGFactory() {}
+	
+	virtual CFG* create() = 0;
+
+ protected:
+};
 
 #endif

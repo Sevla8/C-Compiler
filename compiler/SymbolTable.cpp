@@ -6,6 +6,20 @@ bool SymbolTable::exists(std::string id) {
 	return symbols.find(id)!=symbols.end();
 }
 
+void SymbolTable::variablesNotUsed() {
+	std::map<std::string, VDescriptor>::iterator p;
+	for(p = symbols.begin(); p != symbols.end(); p++)
+  	{
+		
+		if (!p->second.getUsed())
+		{
+			cerr << "WARNING! Variable '" << p->first <<"' declared but never used.\n";
+		}
+		
+  	}
+	return ;
+}
+
 void SymbolTable::add(std::string id) {
 	VDescriptor vd(var_count*4);
 	++var_count;
@@ -31,4 +45,8 @@ string SymbolTable::getTempVariable() {
 void SymbolTable::clearTempVariable() {
 	var_count -= tmp_count;
 	tmp_count = 0;
+}
+
+int SymbolTable::getMaxStackSize() {
+	return (var_count+max_tmp)*4;
 }

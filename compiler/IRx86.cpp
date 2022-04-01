@@ -2,10 +2,13 @@
 
 using namespace std;
 
+string REGCALL[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
+
 void IRInstrx86::gen_asm(ostream &o)
 {
     string tmp("%ebx");
     string opstring;
+    int i;
     switch (op)
     {
     case Operation::ldconst:
@@ -51,15 +54,18 @@ void IRInstrx86::gen_asm(ostream &o)
         o << "idivl " << tmp << "\n";
         o << "movl %edx, " << cfg->IR_reg_to_asm(params[0]) << "\n";
         break;
+    case Operation::lnot:
     case Operation::neg:
+        if (op == Operation::neg) opstring = "negl";
+        else if (op == Operation::lnot) opstring = "notl";
         if (params[1] == params[0])
         {
-            o << "negl " << cfg->IR_reg_to_asm(params[0]) << "\n";
+            o << opstring << " " << cfg->IR_reg_to_asm(params[0]) << "\n";
         }
         else
         {
             o << "movl " << cfg->IR_reg_to_asm(params[1]) << ", " << tmp << "\n";
-            o << "negl " << tmp << "\n";
+            o << opstring << " " << tmp << "\n";
             o << "movl " << tmp << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
         }
         break;
@@ -88,6 +94,11 @@ void IRInstrx86::gen_asm(ostream &o)
             o << "movl " << tmp << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
         }
         break;
+    case Operation::cnot:
+        o << "cmpl $0, " << cfg->IR_reg_to_asm(params[1]) << "\n";
+        o << "sete %bl\n";
+        o << "movzbl %bl, " << cfg->IR_reg_to_asm(params[0]) << "\n";
+        break;
     case Operation::cmp_eq:
     case Operation::cmp_ne:
     case Operation::cmp_lt:
@@ -112,29 +123,14 @@ void IRInstrx86::gen_asm(ostream &o)
     case Operation::wmem:
         break;
     case Operation::call:
+        for (i=1; i<params.size(); ++i) {
+            o<<"movl "<<cfg->IR_reg_to_asm(params[i])<<", "<<REGCALL[i-1]<<"\n";
+        }
+        o<<"call "<<params[0]<<"\n";
         break;
     default:
         break;
     }
-}
-
-BasicBlock * CFGx86::create_bb()
-{
-    BasicBlock *bb = new BasicBlock(this, string("block") + to_string(nextBBnumber));
-    // current_bb = bb;
-    ++nextBBnumber;    
-    return bb;
-}
-void CFGx86::add_bb(BasicBlock* newBB){
-    bbs.push_back(newBB);
-}
-
-void CFGx86::set_current_bb(BasicBlock* bb){
-    current_bb=bb;
-}
-
-BasicBlock* CFGx86::get_current_bb(){
-    return current_bb;
 }
 
 void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o){
@@ -186,13 +182,27 @@ string CFGx86::IR_reg_to_asm(string reg)
 }
 void CFGx86::gen_asm_prologue(ostream &o)
 {
-    o << ".globl	main\n"
-         " main: \n"
+    int i;
+    o << ".globl	"<<name<<"\n"
+         " "<<name<<": \n"
          " 	pushq  %rbp\n"
          " 	movq   %rsp, %rbp\n";
+    for (i=0; i<params.size(); ++i) {
+        o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i])<<"\n";
+    }
+    int offset = get_table().getMaxStackSize();
+    if (offset%32!=0) {
+        offset += 32 - offset%32;
+    }
+    o<<"subq $"<<offset<<", %rsp\n";
 }
 void CFGx86::gen_asm_epilogue(ostream &o)
 {
-    o << " 	popq   %rbp\n"
+    o << " 	leave\n"
          " 	ret\n";
+}
+
+CFG* CFGx86Factory::create() {
+    CFG* cfg = new CFGx86;
+    return cfg;
 }

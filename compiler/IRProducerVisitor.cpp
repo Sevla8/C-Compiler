@@ -2,23 +2,25 @@
 
 using namespace std;
 
-antlrcpp::Any IRProducerVisitor::visitProg(ifccParser::ProgContext *ctx)
+antlrcpp::Any IRProducerVisitor::visitFunction(ifccParser::FunctionContext *ctx)
 {
-	BasicBlock* first_bb=cfg.create_bb();
-	cfg.add_bb(first_bb);
+	cfg = cfgTable.find(ctx->IDENTIFIER()->getText())->second;
+	symbols = &cfg->get_table();
+	BasicBlock* first_bb=cfg->create_bb();
+	cfg->add_bb(first_bb);
 
-	cfg.set_current_bb(first_bb);
+	cfg->set_current_bb(first_bb);
 	visitChildren(ctx);
 	return 0;
 }
 
 antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ctx)
 {
-	BasicBlock* bb_then=cfg.create_bb();
-	BasicBlock* bb_else=cfg.create_bb();
-	BasicBlock* bb_endif=cfg.create_bb();
+	BasicBlock* bb_then=cfg->create_bb();
+	BasicBlock* bb_else=cfg->create_bb();
+	BasicBlock* bb_endif=cfg->create_bb();
 
-	BasicBlock* cur_bb=cfg.get_current_bb();
+	BasicBlock* cur_bb=cfg->get_current_bb();
 	
 	bb_then->exit_true=bb_endif;
 	bb_then->exit_false=bb_endif;
@@ -37,32 +39,32 @@ antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ct
 
 		vector<string> p;
 		p.push_back("!reg");
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
 
-		cfg.add_bb(bb_then);	
-		cfg.set_current_bb(bb_then);
+		cfg->add_bb(bb_then);	
+		cfg->set_current_bb(bb_then);
 		visit(ctx->branch(0));
 		
-		cfg.add_bb(bb_else);
+		cfg->add_bb(bb_else);
 		
 		if(ctx->branch(1)!=nullptr){	
-			cfg.set_current_bb(bb_else);
+			cfg->set_current_bb(bb_else);
 			visit(ctx->branch(1));
 		}
 	}
 
-	cfg.add_bb(bb_endif);
-	cfg.set_current_bb(bb_endif);
+	cfg->add_bb(bb_endif);
+	cfg->set_current_bb(bb_endif);
 	return 0;
 }
 
 antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 {
-	BasicBlock* bb_check=cfg.create_bb();
-	BasicBlock* bb_body=cfg.create_bb();
-	BasicBlock* bb_endwhile=cfg.create_bb();
+	BasicBlock* bb_check=cfg->create_bb();
+	BasicBlock* bb_body=cfg->create_bb();
+	BasicBlock* bb_endwhile=cfg->create_bb();
 
-	BasicBlock* cur_bb=cfg.get_current_bb();
+	BasicBlock* cur_bb=cfg->get_current_bb();
 	
 	bb_check->exit_true=bb_body;
 	bb_check->exit_false=bb_endwhile;
@@ -77,31 +79,31 @@ antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 	cur_bb->exit_false=bb_check;
 
 	if(ctx->expression()!=nullptr){
-		cfg.set_current_bb(bb_check);
-		cfg.add_bb(bb_check);
+		cfg->set_current_bb(bb_check);
+		cfg->add_bb(bb_check);
 		visit(ctx->expression());
 
 		vector<string> p;
 		p.push_back("!reg");
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
 
-		cfg.add_bb(bb_body);	
-		cfg.set_current_bb(bb_body);
+		cfg->add_bb(bb_body);	
+		cfg->set_current_bb(bb_body);
 		visit(ctx->branch());
 	}
 
-	cfg.add_bb(bb_endwhile);
-	cfg.set_current_bb(bb_endwhile);
+	cfg->add_bb(bb_endwhile);
+	cfg->set_current_bb(bb_endwhile);
 	return 0;
 }
 
-antlrcpp::Any IRProducerVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx) {
+antlrcpp::Any IRProducerVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (ctx->expression()!=nullptr) {
 		visit(ctx->expression());
 		vector<string> p;
 		p.push_back(ctx->IDENTIFIER()->getText());
 		p.push_back("!reg");
-		cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	}
 	return 0;
 }
@@ -110,7 +112,7 @@ antlrcpp::Any IRProducerVisitor::visitValue(ifccParser::ValueContext *ctx) {
 	vector<string> p;
 	p.push_back("!reg");
 	p.push_back(ctx->CONST()->getText());
-	cfg.add_IRInstr_to_current(IRInstr::Operation::ldconst,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::ldconst,p);
 	return 0;
 }
 
@@ -118,7 +120,34 @@ antlrcpp::Any IRProducerVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx)
 	vector<string> p;
 	p.push_back("!reg");
 	p.push_back(ctx->IDENTIFIER()->getText());
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	return 0;
+}
+
+antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
+	CFG* func = cfgTable.find(ctx->IDENTIFIER()->getText())->second;
+	vector<string> p;
+	p.push_back(func->get_name());
+	vector<string>* previous = params;
+	params = &p;
+	visitChildren(ctx);
+	if (p.size()>7) {
+		cerr << "Sorry, we can't have functions with more than 6 parameters" << endl;
+		errors += 1;
+	}
+	cfg->add_IRInstr_to_current(IRInstr::Operation::call,p);
+	params = previous;
+	return 0;
+}
+
+antlrcpp::Any IRProducerVisitor::visitCallarg(ifccParser::CallargContext *ctx) {
+	visitChildren(ctx);
+	string tmp = symbols->getTempVariable();
+	vector<string> p;
+	p.push_back(tmp);
+	p.push_back("!reg");
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	params->push_back(tmp);
 	return 0;
 }
 
@@ -128,7 +157,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	if (ctx->EQ() != nullptr) {
 		p.push_back(ctx->IDENTIFIER()->getText());
 		p.push_back("!reg");
-		cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	}
 	else if (ctx->B_PRIO_14() != nullptr) {
 		std::string token(ctx->B_PRIO_14()->getText());
@@ -136,17 +165,17 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 			p.push_back(ctx->IDENTIFIER()->getText());
 			p.push_back(ctx->IDENTIFIER()->getText());
 			p.push_back("!reg");
-			cfg.add_IRInstr_to_current(IRInstr::Operation::add,p);
+			cfg->add_IRInstr_to_current(IRInstr::Operation::add,p);
 		}
 		else if (token == "-=") {
 			p.push_back(ctx->IDENTIFIER()->getText());
 			p.push_back(ctx->IDENTIFIER()->getText());
 			p.push_back("!reg");
-			cfg.add_IRInstr_to_current(IRInstr::Operation::sub,p);
+			cfg->add_IRInstr_to_current(IRInstr::Operation::sub,p);
 		}
 		q.push_back("!reg");
 		q.push_back(ctx->IDENTIFIER()->getText());
-		cfg.add_IRInstr_to_current(IRInstr::Operation::copy,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::copy,q);
 	}
 
 	return 0;
@@ -155,13 +184,22 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	visit(ctx->expression());
-	std::string token(ctx->BU_PRIO_2_4()->getText());
 	vector<string> p;
-	if(token == "+"){
-	}else if(token == "-"){
-		p.push_back("!reg");
-		p.push_back("!reg");
-		cfg.add_IRInstr_to_current(IRInstr::Operation::neg,p);
+	p.push_back("!reg");
+	p.push_back("!reg");
+	if (ctx->BU_PRIO_2_4()!=nullptr) {
+		std::string token(ctx->BU_PRIO_2_4()->getText());
+		if(token == "+"){
+		}else if(token == "-"){
+			cfg->add_IRInstr_to_current(IRInstr::Operation::neg,p);
+		}
+	} else {
+		std::string token(ctx->U_PRIO_2()->getText());
+		if(token == "~") {
+			cfg->add_IRInstr_to_current(IRInstr::Operation::lnot,p);
+		}else if(token == "!") {
+			cfg->add_IRInstr_to_current(IRInstr::Operation::cnot,p);
+		}
 	}
 	return 0;
 	
@@ -170,40 +208,40 @@ antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 antlrcpp::Any IRProducerVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
 	std::string token(ctx->B_PRIO_3()->getText());
 	if (token=="*") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::mul,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::mul,q);
 	}else if (token=="/") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::div,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::div,q);
 	}else if (token=="%") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::mod,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::mod,q);
 	}
 	return 0;
 }
 antlrcpp::Any IRProducerVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
 	std::string token(ctx->BU_PRIO_2_4()->getText());
 	if (token=="+") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::add,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::add,q);
 	}else if (token=="-") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::sub,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::sub,q);
 	}
 	return 0;
 }
@@ -211,17 +249,17 @@ antlrcpp::Any IRProducerVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 antlrcpp::Any IRProducerVisitor::visitPrio8(ifccParser::Prio8Context *ctx){
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
 	std::string token(ctx->B_PRIO_8()->getText());
 	if(token=="&"){
-		cfg.add_IRInstr_to_current(IRInstr::Operation::land,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::land,q);
 	}
 	return 0;
 }
@@ -229,17 +267,17 @@ antlrcpp::Any IRProducerVisitor::visitPrio8(ifccParser::Prio8Context *ctx){
 antlrcpp::Any IRProducerVisitor::visitPrio9(ifccParser::Prio9Context *ctx){
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
 	std::string token(ctx->B_PRIO_9()->getText());
 	if(token=="^"){
-		cfg.add_IRInstr_to_current(IRInstr::Operation::lxor,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::lxor,q);
 	}
 	return 0;
 }
@@ -247,17 +285,17 @@ antlrcpp::Any IRProducerVisitor::visitPrio9(ifccParser::Prio9Context *ctx){
 antlrcpp::Any IRProducerVisitor::visitPrio10(ifccParser::Prio10Context *ctx){
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
 	std::string token(ctx->B_PRIO_10()->getText());
 	if(token=="|"){
-		cfg.add_IRInstr_to_current(IRInstr::Operation::lor,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::lor,q);
 	}
 	return 0;
 }
@@ -266,26 +304,26 @@ antlrcpp::Any IRProducerVisitor::visitPrio10(ifccParser::Prio10Context *ctx){
 antlrcpp::Any IRProducerVisitor::visitPrio6(ifccParser::Prio6Context *ctx) {
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
 	std::string token(ctx->B_PRIO_6()->getText());
 	if (token=="<") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_lt,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_lt,q);
 	}
 	if (token==">") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_gt,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_gt,q);
 	}
 	if (token=="<=") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_le,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_le,q);
 	}
 	if (token==">=") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_ge,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_ge,q);
 	}
 	return 0;
 }
@@ -294,20 +332,20 @@ antlrcpp::Any IRProducerVisitor::visitPrio6(ifccParser::Prio6Context *ctx) {
 antlrcpp::Any IRProducerVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
 	std::string token(ctx->B_PRIO_7()->getText());
 	if (token=="!=") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_ne,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_ne,q);
 	}
 	if (token=="==") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::cmp_eq,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_eq,q);
 	}
 	return 0;
 }
@@ -315,10 +353,10 @@ antlrcpp::Any IRProducerVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
 antlrcpp::Any IRProducerVisitor::visitPrio5(ifccParser::Prio5Context *ctx) {
 	visit(ctx->expression(0));
 	vector<string> p, q;
-	string tmp = symbols.getTempVariable();
+	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
-	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
 	q.push_back("!reg");
 	q.push_back(tmp);
@@ -326,10 +364,10 @@ antlrcpp::Any IRProducerVisitor::visitPrio5(ifccParser::Prio5Context *ctx) {
 	std::string token(ctx->B_PRIO_5()->getText());
 	
 	if (token=="<<") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::lsl,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::lsl,q);
 	}
 	if (token==">>") {
-		cfg.add_IRInstr_to_current(IRInstr::Operation::lsr,q);
+		cfg->add_IRInstr_to_current(IRInstr::Operation::lsr,q);
 	}
 	return 0;
 }

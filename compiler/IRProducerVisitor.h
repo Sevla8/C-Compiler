@@ -12,20 +12,24 @@ using namespace std;
 
 class  IRProducerVisitor : public ifccBaseVisitor {
 public:
-  IRProducerVisitor(SymbolTable& sym, CFG& cfg_) : symbols(sym), cfg(cfg_) {}
+  IRProducerVisitor(map<string,CFG*>& cfg) : cfgTable(cfg) {}
 
-  virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+  virtual antlrcpp::Any visitFunction(ifccParser::FunctionContext *ctx) override;
 
   virtual antlrcpp::Any visitCondition(ifccParser::ConditionContext *ctx) override;
 
   virtual antlrcpp::Any visitLoop(ifccParser::LoopContext *ctx) override;
 
-  virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
+  virtual antlrcpp::Any visitDeclstatement(ifccParser::DeclstatementContext *ctx) override;
 
   virtual antlrcpp::Any visitValue(ifccParser::ValueContext *ctx) override;
 
   virtual antlrcpp::Any visitVarvalue(ifccParser::VarvalueContext *ctx) override;
   
+  virtual antlrcpp::Any visitCall(ifccParser::CallContext *ctx) override;
+  
+  virtual antlrcpp::Any visitCallarg(ifccParser::CallargContext *ctx) override;
+
   virtual antlrcpp::Any visitPrio2(ifccParser::Prio2Context *ctx) override;
 
   virtual antlrcpp::Any visitPrio3(ifccParser::Prio3Context *ctx) override;
@@ -49,8 +53,10 @@ public:
   int getErrors();
 
 protected:
-  SymbolTable& symbols;
-  CFG& cfg;
+  map<string,CFG*>& cfgTable;
+  CFG* cfg;
+  SymbolTable* symbols;
+  vector<string>* params;
   int errors = 0;
 };
 

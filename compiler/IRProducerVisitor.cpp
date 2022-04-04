@@ -150,8 +150,8 @@ antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
 	vector<string>* previous = params;
 	params = &p;
 	visitChildren(ctx);
-	if (p.size()>7) {
-		cerr << "Sorry, we can't have functions with more than 6 parameters" << endl;
+	if (p.size()!=func->get_params().size()+1) {
+		cerr << "Functions don't have the same number of parameters" << endl;
 		errors += 1;
 	}
 	cfg->add_IRInstr_to_current(IRInstr::Operation::call,p);

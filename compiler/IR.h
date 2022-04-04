@@ -98,6 +98,7 @@ class CFG {
 	void add_bb(BasicBlock* newBB);
 	SymbolTable& get_table();
 	string get_name();
+	vector<string>& get_params();
 	virtual void jump_to_epilogue(ostream &o)=0;
 
  protected:

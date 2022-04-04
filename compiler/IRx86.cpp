@@ -9,7 +9,7 @@ void IRInstrx86::gen_asm(ostream &o)
     cfg->get_table().setCurrentBlock(num_block);
     string tmp("%ebx");
     string opstring;
-    int i;
+    int i, size_max;
     switch (op)
     {
     case Operation::ldconst:
@@ -124,10 +124,24 @@ void IRInstrx86::gen_asm(ostream &o)
     case Operation::wmem:
         break;
     case Operation::call:
-        for (i=1; i<params.size(); ++i) {
-            o<<"movl "<<cfg->IR_reg_to_asm(params[i])<<", "<<REGCALL[i-1]<<"\n";
+        if (params.size()>7) {
+            size_max = ((params.size()-7)*8)%16;
+            if (size_max!=0) {
+                o<<"subq $"<<(16-size_max)<<", %rsp\n";
+            }
+        }
+        for (i=params.size()-1; i>0; --i) {
+            if (i>=7) {
+                o<<"movl "<<cfg->IR_reg_to_asm(params[i])<<", %eax\n";
+                o<<"pushq %rax\n";
+            } else {
+                o<<"movl "<<cfg->IR_reg_to_asm(params[i])<<", "<<REGCALL[i-1]<<"\n";
+            }
         }
         o<<"call "<<params[0]<<"\n";
+        if (params.size()>7) {
+            o<<"addq $"<<(size_max+(params.size()-7)*8)<<", %rsp\n";
+        }
         break;
     case Operation::ret:
         cfg->jump_to_epilogue(o);
@@ -203,7 +217,12 @@ void CFGx86::gen_asm_prologue(ostream &o)
          " 	movq   %rsp, %rbp\n";
     symbols.setCurrentBlock(1);
     for (i=0; i<params.size(); ++i) {
-        o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i])<<"\n";
+        if (i>=6) {
+            o<<"movq "<<((i-6)*8+16)<<"(%rbp), %rax\n";
+            o<<"movl %eax, "<<IR_reg_to_asm(params[i])<<"\n";
+        } else {
+            o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i])<<"\n";
+        }
     }
     int offset = get_table().getMaxStackSize();
     if (offset%32!=0) {

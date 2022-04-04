@@ -61,12 +61,17 @@ int main(int argn, const char **argv)
   vav.visit(tree);
 
   if (vav.getErrors()) {
-      cerr << "error: syntax error during analyse" << endl;
+      cerr << "error: during analyse" << endl;
       exit(1);
   }
   
   IRProducerVisitor ipv(functions);
   ipv.visit(tree);
+  
+  if (ipv.getErrors()) {
+      cerr << "error: during assembly production" << endl;
+      exit(1);
+  }
   
   map<string, CFG*>::iterator p;
 

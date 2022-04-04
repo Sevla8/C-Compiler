@@ -29,6 +29,9 @@ SymbolTable& CFG::get_table() {
 string CFG::get_name() {
 	return name;
 }
+vector<string>& CFG::get_params() {
+	return params;
+}
 
 
 void BasicBlock::gen_asm(ostream &o){

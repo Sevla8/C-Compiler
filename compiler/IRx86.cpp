@@ -117,7 +117,12 @@ void IRInstrx86::gen_asm(ostream &o)
         o << "movzbl %bl, " << cfg->IR_reg_to_asm(params[0]) << "\n";
         break;
     case Operation::cmp_z:
+    case Operation::cmp_zs:
         o<<"cmpl $0, "<<cfg->IR_reg_to_asm(params[0])<<"\n";
+        if (op == Operation::cmp_zs) {
+            o<<"sete %bl\n";
+            o<<"movzbl %bl, " << cfg->IR_reg_to_asm(params[0]) << "\n";
+        }
         break;
     case Operation::rmem:
         break;

@@ -390,6 +390,70 @@ antlrcpp::Any IRProducerVisitor::visitPrio5(ifccParser::Prio5Context *ctx) {
 	}
 	return 0;
 }
+
+antlrcpp::Any IRProducerVisitor::visitPrio12(ifccParser::Prio12Context *ctx) {
+	//create 2 block :  second_member_bb , end_test_bb
+	BasicBlock* bb_second_member=cfg->create_bb();
+	BasicBlock* bb_end_ou_paresseux=cfg->create_bb();
+	BasicBlock* cur_bb=cfg->get_current_bb();
+	bb_second_member->exit_true=bb_end_ou_paresseux;
+	bb_second_member->exit_false=bb_end_ou_paresseux;
+	
+	bb_end_ou_paresseux->exit_true=cur_bb->exit_true;
+	bb_end_ou_paresseux->exit_false=cur_bb->exit_false;
+
+	cur_bb->exit_false=bb_second_member;
+	cur_bb->exit_true=bb_end_ou_paresseux;
+	visit(ctx->expression(0));
+	vector<string> p;
+	p.push_back("!reg");
+	cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
+	
+	cfg->add_bb(bb_second_member);	
+	cfg->set_current_bb(bb_second_member);
+	visit(ctx->expression(1));
+
+//mais on a pas defini qu'est ce qui se passe dans le bloc bb_end_ou_paresseux
+	cfg->add_bb(bb_end_ou_paresseux);
+	cfg->set_current_bb(bb_end_ou_paresseux);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_zs,p);
+
+
+	return 0;
+}
+
+antlrcpp::Any IRProducerVisitor::visitPrio11(ifccParser::Prio11Context *ctx) {
+	//create 2 block :  second_member_bb , end_test_bb
+	BasicBlock* bb_second_member=cfg->create_bb();
+	BasicBlock* bb_end_and_paresseux=cfg->create_bb();
+	BasicBlock* cur_bb=cfg->get_current_bb();
+	bb_second_member->exit_true=bb_end_and_paresseux;
+	bb_second_member->exit_false=bb_end_and_paresseux;
+	
+	bb_end_and_paresseux->exit_true=cur_bb->exit_true;
+	bb_end_and_paresseux->exit_false=cur_bb->exit_false;
+
+	cur_bb->exit_false=bb_end_and_paresseux;
+	cur_bb->exit_true=bb_second_member;
+	visit(ctx->expression(0));
+	vector<string> p, q;
+	string tmp = symbols->getTempVariable();
+	p.push_back("!reg");
+	cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
+	
+	cfg->add_bb(bb_second_member);	
+	cfg->set_current_bb(bb_second_member);
+	visit(ctx->expression(1));
+
+// ------------idem en terme de def
+	cfg->add_bb(bb_end_and_paresseux);
+	cfg->set_current_bb(bb_end_and_paresseux);
+	cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_zs,p);
+
+
+	return 0;
+}
+
 int IRProducerVisitor::getErrors() {
 	return errors;
 }

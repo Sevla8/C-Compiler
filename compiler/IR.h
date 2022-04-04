@@ -46,6 +46,7 @@ class IRInstr {
 		cmp_gt,
 		cmp_ge,
 		cmp_z,
+		cmp_zs,
 		ret
 	} Operation;
 

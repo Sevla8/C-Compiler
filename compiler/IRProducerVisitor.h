@@ -52,6 +52,10 @@ public:
 
   virtual antlrcpp::Any visitPrio10(ifccParser::Prio10Context *ctx) override;
 
+  virtual antlrcpp::Any visitPrio12(ifccParser::Prio12Context *ctx) override;
+
+  virtual antlrcpp::Any visitPrio11(ifccParser::Prio11Context *ctx) override;
+
   virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
   int getErrors();

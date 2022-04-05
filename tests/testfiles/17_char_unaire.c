@@ -1,5 +1,9 @@
 int main(){
-    char a='a';
+    char a = 97;
+    int b = 128; 
+    int c = 572;
 
-    return -a;
+    int d = c>>5;
+
+    return d;
 }

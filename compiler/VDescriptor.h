@@ -3,8 +3,9 @@
 class VDescriptor {
 public:
   enum TYPE {
-    tint = 0,
-    tchar = 1
+    tvoid=0,
+    tint = 1,
+    tchar = 2,
   };
   
   //VDescriptor(int off) : offset(off), type(tint) {}
@@ -12,7 +13,7 @@ public:
   int getOffset();
   bool getUsed();
   void setUsed(bool v);
-  int getType() {return type;};
+  TYPE getType() {return type;};
 
 protected:
   TYPE type; 

@@ -142,6 +142,7 @@ class CFG {
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
 	virtual void gen_asm(ostream& o) = 0;
 	virtual string IR_reg_to_asm(string reg) = 0; /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
+	virtual VDescriptor::TYPE get_type_reg(string reg)=0;
 	virtual void gen_asm_prologue(ostream& o) = 0;
 	virtual void gen_asm_epilogue(ostream& o) = 0;
 

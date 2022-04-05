@@ -40,7 +40,8 @@ antlrcpp::Any IRProducerVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx)
 
 antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	visit(ctx->expression());
-	vector<string> p, q;
+	vector<string> p, q;	
+	int retType = symbols.get((string) ctx->IDENTIFIER()->getText()).getType(); 
 	if (ctx->EQ() != nullptr) {
 		p.push_back(ctx->IDENTIFIER()->getText());
 		p.push_back("!reg");
@@ -65,13 +66,15 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 		cfg.add_IRInstr_to_current(IRInstr::Operation::copy,q);
 	}
 
-	return 0;
+	return retType;
 }
 
 
 antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	visit(ctx->expression());
 	vector<string> p;
+	int retType = symbols.get((string) ctx->expression()->getText()).getType(); 
+
 	p.push_back("!reg");
 	p.push_back("!reg");
 	if (ctx->BU_PRIO_2_4()!=nullptr) {
@@ -88,7 +91,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 			cfg.add_IRInstr_to_current(IRInstr::Operation::cnot,p);
 		}
 	}
-	return 0;
+	return retType;
 	
 }
 
@@ -96,6 +99,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	visit(ctx->expression(0));
 	vector<string> p, q;
 	string tmp = symbols.getTempVariable();
+	symbols.get(tmp).getType(); 
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg.add_IRInstr_to_current(IRInstr::Operation::copy,p);

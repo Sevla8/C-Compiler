@@ -37,6 +37,7 @@ class CFGx86 : public CFG {
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
 	virtual void gen_asm(ostream& o);
 	virtual string IR_reg_to_asm(string reg);
+	virtual VDescriptor::TYPE get_type_reg(string reg);
 	virtual void gen_asm_prologue(ostream& o);
 	virtual void gen_asm_epilogue(ostream& o);
  protected:

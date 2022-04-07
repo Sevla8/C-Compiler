@@ -13,7 +13,7 @@ class SymbolTable {
 public:
   int exists(string id);
   void variablesNotUsed();
-  void add(string id);
+  void add(string id, string type);
   VDescriptor& get(pair<string, int> id);
   string getTempVariable();
   void clearTempVariable();

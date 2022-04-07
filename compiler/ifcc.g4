@@ -2,12 +2,12 @@ grammar ifcc;
 
 axiom : prog ;
 
-prog : function+;
+prog : function+ EOF;
 
-function : (TYPE | 'void') IDENTIFIER '(' arguments? ')' block ;
+function : type=('int' | 'char' | 'void') IDENTIFIER '(' arguments? ')' block ;
 
 arguments : arguments ',' arguments #funcsplit
-| TYPE IDENTIFIER #funcarg;
+| type=('int' | 'char') IDENTIFIER #funcarg;
 
 block :'{' (declaration ';' | branch)* '}'  ;
 
@@ -18,7 +18,7 @@ branch : instruction | block | condition | loop;
 loop: 'while' '(' expression ')' branch;
 
 instruction : RETURN? expression? ';';
-declaration : TYPE decllist;
+declaration : type=('int' | 'char') decllist;
 
 decllist : declstatement ',' decllist | declstatement;
 declstatement : IDENTIFIER (EQ expression)?;
@@ -39,11 +39,13 @@ expression : '(' expression ')' #prio1
 | expression '?' expression ':' expression #prio13
 | IDENTIFIER (EQ|B_PRIO_14) expression #prio14
 | CONST #value
-| IDENTIFIER #varvalue;
+| IDENTIFIER #varvalue
+| CHAR #char;  // pour décrire les expressions
 
 callarglist : callarglist ',' callarglist #callsplit
 | expression #callarg;
 
+CHAR : '\''[ -~] '\'';  // dans la partie REGEX
 EQ : '=';
 U_PRIO_2 : '!' | '~';
 B_PRIO_3 : '*' | '/' | '%';
@@ -58,7 +60,6 @@ B_PRIO_11 : '&&';
 B_PRIO_12 : '||';
 B_PRIO_14 : '+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|=';
 RETURN : 'return';
-TYPE : 'int';
 IDENTIFIER : [A-Za-z_][A-Za-z0-9_]*;
 CONST : [0-9]+ ;
 COMMENT : (('/*' .*? '*/')| ('//' .*? '\n')) -> skip ;

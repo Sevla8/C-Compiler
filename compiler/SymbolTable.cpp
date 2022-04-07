@@ -38,8 +38,14 @@ int SymbolTable::exists(string id) {
 	return res;
 }
 
-void SymbolTable::add(string id) {
-	VDescriptor vd(var_count*4,currentBlock);
+void SymbolTable::add(std::string id, std::string type) {
+	VDescriptor::TYPE t;
+	if(type == "int"){
+		t = VDescriptor::TYPE::tint;
+	}else if(type == "char"){
+		t = VDescriptor::TYPE::tchar;
+	}
+	VDescriptor vd ((int)(var_count*4), t, currentBlock);
 	++var_count;
 	pair<string, int> pair_id=make_pair(id,currentBlock);
 	symbols.insert(make_pair(pair_id, vd));

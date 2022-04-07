@@ -101,6 +101,7 @@ class CFG {
 	string get_name();
 	vector<string>& get_params();
 	virtual void jump_to_epilogue(ostream &o)=0;
+	virtual VDescriptor::TYPE get_type_reg(string reg)=0;
 
  protected:
 	string name;
@@ -126,6 +127,7 @@ class DummyCFG : public CFG {
 	virtual void gen_asm_epilogue(ostream& o) {}
 	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o) {}
 	virtual void jump_to_epilogue(ostream &o) {}
+	virtual VDescriptor::TYPE get_type_reg(string reg){return VDescriptor::TYPE::tvoid;}
 };
 
 

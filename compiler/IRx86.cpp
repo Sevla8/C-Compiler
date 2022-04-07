@@ -16,7 +16,24 @@ void IRInstrx86::gen_asm(ostream &o)
         o << "movl $" << params[1] << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
         break;
     case Operation::copy:
-        o << "movl " << cfg->IR_reg_to_asm(params[1]) << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
+        if(cfg->get_type_reg(params[0])== VDescriptor::TYPE::tchar){
+            // 32-> 8
+            // movb src, dest // si src= eax-> al
+            string srcReg=cfg->IR_reg_to_asm(params[1]);
+            if(params[1]=="!reg"){
+                srcReg="%al";
+            }
+            o << "movb " << srcReg << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
+
+        }else if(cfg->get_type_reg(params[1])== VDescriptor::TYPE::tchar){
+        // 8-> 32
+        // movsbl src, dest
+            o << "movsbl " << cfg->IR_reg_to_asm(params[1]) << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
+
+        }else{
+            // 32-> 32
+            o << "movl " << cfg->IR_reg_to_asm(params[1]) << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
+        }        
         break;
     case Operation::sub:
         if (params[1] == params[0])
@@ -204,12 +221,24 @@ string CFGx86::IR_reg_to_asm(string reg)
     }
     else if (symbols.exists(reg)!=-1)
     {
-        std::pair<std::string,int> id=make_pair(reg,symbols.exists(reg));
+        pair<string,int> id=make_pair(reg,symbols.exists(reg));
         return string("-") + to_string(symbols.get(id).getOffset()) + string("(%rbp)");
     }
     else
     {
         return string("-") + reg + string("(%rbp)");
+    }
+}
+
+VDescriptor::TYPE CFGx86::get_type_reg(string reg)
+{
+    if(symbols.exists(reg)!=-1)
+    {
+        pair<string,int> id=make_pair(reg,symbols.exists(reg));
+        return symbols.get(id).getType();
+    } else
+    {
+        return VDescriptor::TYPE::tint;
     }
 }
 

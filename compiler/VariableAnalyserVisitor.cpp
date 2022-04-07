@@ -22,7 +22,13 @@ antlrcpp::Any VariableAnalyserVisitor::visitFunction(ifccParser::FunctionContext
 antlrcpp::Any VariableAnalyserVisitor::visitFuncarg(ifccParser::FuncargContext *ctx)
 {
 	params->push_back(ctx->IDENTIFIER()->getText());
-	symbols->add(ctx->IDENTIFIER()->getText());
+	symbols->add(ctx->IDENTIFIER()->getText(), ctx->type->getText());
+	return 0;
+}
+
+antlrcpp::Any VariableAnalyserVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx) {	
+	currentType=ctx->type->getText();
+	visitChildren(ctx);	
 	return 0;
 }
 
@@ -34,7 +40,7 @@ antlrcpp::Any VariableAnalyserVisitor::visitDeclstatement(ifccParser::Declstatem
 		std::cerr<<"Variable "<<ctx->IDENTIFIER()->getText()<<" already declared here.\n";
 		errors += 1;
 	} else {
-		symbols->add(ctx->IDENTIFIER()->getText());
+		symbols->add(ctx->IDENTIFIER()->getText(), currentType);
 	}
 	return 0;
 }

@@ -8,7 +8,6 @@ bool VDescriptor::getUsed() {
 	return used;
 }
 
-
 void VDescriptor::setUsed(bool v) {
 	used = v;
 }

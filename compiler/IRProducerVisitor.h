@@ -28,6 +28,8 @@ public:
 
   virtual antlrcpp::Any visitVarvalue(ifccParser::VarvalueContext *ctx) override;
   
+  virtual antlrcpp::Any visitChar(ifccParser::CharContext *ctx) override;
+
   virtual antlrcpp::Any visitCall(ifccParser::CallContext *ctx) override;
   
   virtual antlrcpp::Any visitCallarg(ifccParser::CallargContext *ctx) override;

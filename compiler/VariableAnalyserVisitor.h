@@ -25,6 +25,8 @@ public:
   virtual antlrcpp::Any visitPrio14(ifccParser::Prio14Context *ctx) override;
 
   virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
+  
+  virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
 
   int getErrors();
 
@@ -35,5 +37,6 @@ protected:
   SymbolTable* symbols;
   vector<string>* params;
   int errors = 0;
+  string currentType;
 };
 

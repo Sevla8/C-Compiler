@@ -1,5 +1,7 @@
 #include "IRProducerVisitor.h"
 
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+
 using namespace std;
 
 antlrcpp::Any IRProducerVisitor::visitFunction(ifccParser::FunctionContext *ctx)
@@ -143,6 +145,15 @@ antlrcpp::Any IRProducerVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx)
 	return 0;
 }
 
+antlrcpp::Any IRProducerVisitor::visitChar(ifccParser::CharContext *ctx) {
+    vector<string> p;
+    p.push_back("!reg");
+    int temp = (int) ctx->CHAR()->getText()[1]; 
+    p.push_back(to_string(temp));
+    cfg->add_IRInstr_to_current(IRInstr::Operation::ldconst,p);
+    return 0;
+} 
+
 antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
 	CFG* func = cfgTable.find(ctx->IDENTIFIER()->getText())->second;
 	vector<string> p;
@@ -204,6 +215,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	visit(ctx->expression());
 	vector<string> p;
+
 	p.push_back("!reg");
 	p.push_back("!reg");
 	if (ctx->BU_PRIO_2_4()!=nullptr) {

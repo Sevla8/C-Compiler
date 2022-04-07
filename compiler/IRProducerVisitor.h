@@ -1,14 +1,23 @@
+/*************************************************************************
+                                IRProducerVisitor
+    copyright            : (C) 2022 par H4224
+    participants         : ALGOURDIN Benoit, ALVES Brandon, BELIAZI Léna,
+						               BEYE Sellem, BROYER Maya, de LAMBERTYE Grégoire,
+						               SERRANIA Tyefen, ZOUID Moustapha
+*************************************************************************/
+
 #pragma once
 
+//-------------------------------------------------------- Include system
+#include <string>
+#include <vector>
+using namespace std;
 
+//-------------------------------------------------------- Include personnal
 #include "antlr4-runtime.h"
 #include "SymbolTable.h"
 #include "generated/ifccBaseVisitor.h"
 #include "IRx86.h"
-#include <string>
-#include <vector>
-
-using namespace std;
 
 class  IRProducerVisitor : public ifccBaseVisitor {
 public:
@@ -63,11 +72,17 @@ public:
   int getErrors();
 
 protected:
+  // Map to store all CFG
   map<string,CFG*>& cfgTable;
+  // Current CFG
   CFG* cfg;
+  // A table to store all symbols
   SymbolTable* symbols;
+  // Store differents parameters
   vector<string>* params;
+  // Count the number of errors
   int errors = 0;
+  // Count the number of block visited
   int block_visited=0;
 };
 

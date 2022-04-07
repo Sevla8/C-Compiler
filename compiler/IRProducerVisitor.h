@@ -294,6 +294,9 @@ protected:
   int errors = 0;
 
   /** \brief Count the number of block visited */
-  int block_visited=0;
+  int block_visited = 0;
+
+  /** \brief If the last result was void type */
+  bool is_void = false;
 };
 

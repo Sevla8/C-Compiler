@@ -1,122 +1,309 @@
-#ifndef IR_H
-#define IR_H
+#pragma once
 
+
+/**
+ * \file IR.h
+ * \brief An abstraction of the IR (to be implemented for each target)
+ * \author H4224
+ *
+ */
+
+//-------------------------------------------------------- Include system
 #include <vector>
 #include <string>
 #include <iostream>
 #include <initializer_list>
+using namespace std;
 
-// Declarations from the parser
+//-------------------------------------------------------- Include personnal
 #include "SymbolTable.h"
 
-using namespace std;
+class IRInstr;
 class CFG;
-class BasicBlock;
 
+/**
+ * \class BasicBlock
+ *  
+ * \brief Class defining an atomic block where you can jump
+ */
+class BasicBlock {
+ public:
+	/**
+	 * @brief Construct a new BasicBlock
+	 * 
+	 * @param cfg_ the cfg this block belongs to
+	 * @param entry_label a label for this block
+	 */
+	BasicBlock(CFG* cfg_, string entry_label) : cfg(cfg_), label(entry_label), exit_true(nullptr),exit_false(nullptr) {}
 
+	/**
+	 * @brief Generates the asm code of this block
+	 * 
+	 * @param o the output stream
+	 */
+	void gen_asm(ostream &o);
 
-//! The class for one 3-address instruction
+	/**
+	 * @brief Adds an instruction at the end of this block
+	 * 
+	 * @param instr the IR instruction
+	 */
+	void add_IRInstr(IRInstr* instr);
+
+	/** \brief pointer to the next basic block, true branch. If nullptr, no jump. */ 
+	BasicBlock* exit_true;
+	/** \brief pointer to the next basic block, false branch. If nullptr, no jump. */ 
+	BasicBlock* exit_false;
+	/** \brief label of the basic block. */ 
+	string label;
+ protected:
+	/** \brief the cfg attached to this block */ 
+	CFG* cfg; 
+	/** \brief the instructions themselves. */
+	vector<IRInstr*> instrs;
+};
+
+/**
+ * \class IRInstr
+ *  
+ * \brief Class defining an atomic instruction
+ */
 class IRInstr {
  
    public:
-	/** The instructions themselves -- feel free to subclass instead */
+	/**
+	 *\enum Operation 
+	* 
+	* \brief enum describing all the possible operations
+	* 
+	*/
 	typedef enum {
-		ldconst,
-		copy,
-		add,
-		sub,
-		mul,
-		div,
-		mod,
-		neg,
-		land,
-		lor,
-		lxor,
-		lnot,
-		cnot,
-		lsl, 
-		lsr, 
-		rmem,
-		wmem,
-		call, 
-		cmp_eq,
-		cmp_ne,
-		cmp_lt,
-		cmp_le,
-		cmp_gt,
-		cmp_ge,
-		cmp_z,
-		cmp_zs,
-		ret
+		ldconst, // loads a constant into an identifier (arg1 = arg2)
+		copy, // copy the contents of an identifier to another (arg1 = arg2)
+		add, // add operation (arg1 = arg2 + arg3)
+		sub, // sub operation (arg1 = arg2 - arg3)
+		mul, // mul operation (arg1 = arg2 * arg3)
+		div, // div operation (arg1 = arg2 / arg3)
+		mod, // mod operation (arg1 = arg2 % arg3)
+		neg, // neg operation (arg1 = -arg2)
+		land, // bitwise and operation (arg1 = arg2 & arg3)
+		lor, // bitwise or operation (arg1 = arg2 | arg3)
+		lxor, // bitwise xor operation (arg1 = arg2 ^ arg3)
+		lnot, // bitwise not operation (arg1 = ~arg2)
+		cnot, // logical not operation (arg1 = !arg2)
+		lsl, // left shift operation (arg1 = arg2 << arg3)
+		lsr, // right shift operation (arg1 = arg2 >> arg3)
+		rmem, // reads from a base identifier (!reg = arg1[arg2])
+		wmem, // write from a base identifier (arg1[arg2] = arg3)
+		call, // calls a function (arg1(arg2...))
+		cmp_eq, // logical equal (arg1 = arg2==arg3)
+		cmp_ne, // logical not equal (arg1 = arg2!=arg3)
+		cmp_lt, // logical less than (arg1 = arg2<arg3)
+		cmp_le, // logical less equal (arg1 = arg2<=arg3)
+		cmp_gt, // logical greater than (arg1 = arg2>arg3)
+		cmp_ge, // logical greater equal (arg1 = arg2>=arg3)
+		cmp_z, // compares to 0
+		cmp_zs, // compares to 0 and sets arg1 if not equal
+		ret // returns from a function
 	} Operation;
 
 
-	/**  constructor */
+	/**
+	 * @brief Construct a new IRInstr object
+	 * 
+	 * @param cfg_ the cfg this belongs to
+	 * @param bb_ the basic block this belongs to
+	 * @param op_ the operation type
+	 * @param params_ its parameters
+	 * @param num_block the block number where this instruction is executed
+	 */
 	IRInstr(CFG* cfg_, BasicBlock* bb_, Operation op_, vector<string>& params_,int num_block) : cfg(cfg_), bb(bb_), op(op_), params(params_),num_block(num_block) {}
 	
-	/** Actual code generation */
-	virtual void gen_asm(ostream &o) = 0; /**< x86 assembly code generation for this IR instruction */
+	/**
+	 * @brief Generates the asm code of this instruction
+	 * 
+	 * @param o the output stream
+	 */
+	virtual void gen_asm(ostream &o) = 0;
 	
  protected:
-	CFG* cfg; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
+	/** \brief the cfg attached to this intruction */ 
+	CFG* cfg;
+	/** \brief the block attached to this intruction */ 
 	BasicBlock* bb;
+	/** \brief the operation type of this instruction */ 
 	Operation op;
-	vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
+	/** \brief params for this instruction */ 
+	vector<string> params;
+	/** \brief the block of the symbol table where this is executed */ 
 	int num_block;
-	// if you subclass IRInstr, each IRInstr subclass has its parameters and the previous (very important) comment becomes useless: it would be a better design. 
 };
 
 
-
-
-
-/** The class for the control flow graph, also includes the symbol table */
-
-/* A few important comments:
-	 The entry block is the one with the same label as the AST function name.
-	   (it could be the first of bbs, or it could be defined by an attribute value)
-	 The exit block is the one with both exit pointers equal to nullptr.
-     (again it could be identified in a more explicit way)
-
+/**
+ * \class CFG
+ *  
+ * \brief Class defining the control flow graph of one function
  */
 class CFG {
  public:
+	/**
+	 * @brief Construct a new CFG object
+	 * 
+	 */
 	CFG() : nextBBnumber(0) {}
 	
+	/**
+	 * @brief specifies the function attributes associated to this cfg
+	 * 
+	 * @param type of the function
+	 * @param name of the function
+	 * @param params list of pairs <type, identifier> of the function
+	 */
 	void specify_function(VDescriptor::TYPE type, string name, vector<pair<VDescriptor::TYPE, string>>& params);
+
+	/**
+	 * @brief Create a bb object
+	 * 
+	 * @return BasicBlock* a pointer to the basic block created 
+	 */
 	BasicBlock* create_bb();
+
+	/**
+	 * @brief adds an instruction to the current block
+	 * 
+	 * @param op the operation type
+	 * @param params the list of parameters
+	 */
 	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) = 0;
 
-	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
+	/**
+	 * @brief Generates the asm code of this cfg
+	 * 
+	 * @param o the output stream
+	 */
 	virtual void gen_asm(ostream& o) = 0;
-	virtual string IR_reg_to_asm(string reg) = 0; /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
-	virtual void gen_asm_prologue(ostream& o) = 0;
-	virtual void gen_asm_epilogue(ostream& o) = 0;
 
-	void set_current_bb(BasicBlock* bb);
-	BasicBlock* get_current_bb();
-	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
-	void add_bb(BasicBlock* newBB);
-	SymbolTable& get_table();
-	string get_name();
-	VDescriptor::TYPE get_type();
-	vector<pair<VDescriptor::TYPE, string>>& get_params();
-	virtual void jump_to_epilogue(ostream &o)=0;
+	/**
+	 * @brief get the asm representation of an identifier
+	 * 
+	 * @param reg the identifier
+	 * @return string its asm represenation
+	 */
+	virtual string IR_reg_to_asm(string reg) = 0;
+
+	/**
+	 * @brief get the type of an identifier
+	 * 
+	 * @param reg the identifier
+	 * @return VDescriptor::TYPE its type
+	 */
 	virtual VDescriptor::TYPE get_type_reg(string reg)=0;
 
+	/**
+	 * @brief Generates the asm code for the beginning of this function
+	 * 
+	 * @param o the output stream
+	 */
+	virtual void gen_asm_prologue(ostream& o) = 0;
+	
+	/**
+	 * @brief Generates the asm code for the ending of this function
+	 * 
+	 * @param o the output stream
+	 */
+	virtual void gen_asm_epilogue(ostream& o) = 0;
+
+	/**
+	 * @brief Set the current basic block
+	 * 
+	 * @param bb the new current basic block
+	 */
+	void set_current_bb(BasicBlock* bb);
+	
+	/**
+	 * @brief adds a basic block to the list
+	 * 
+	 * @param newBB the basic block to add
+	 */
+	void add_bb(BasicBlock* newBB);
+	
+	/**
+	 * @brief Get the current basic block
+	 * 
+	 * @return BasicBlock* a pointer to the current basic block
+	 */
+	BasicBlock* get_current_bb();
+	
+	/**
+	 * @brief Create the jumps for branches at the end of a block
+	 * 
+	 * @param exit_true true branch
+	 * @param exit_false false branch
+	 * @param o the output
+	 */
+	virtual void create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o)=0;
+
+	/**
+	 * @brief Get the symbol table
+	 * 
+	 * @return SymbolTable& the symbol table
+	 */
+	SymbolTable& get_table();
+
+	/**
+	 * @brief Get the name of the function
+	 * 
+	 * @return string the name
+	 */
+	string get_name();
+
+	/**
+	 * @brief Get the type of the function
+	 * 
+	 * @return VDescriptor::TYPE the type
+	 */
+	VDescriptor::TYPE get_type();
+
+	/**
+	 * @brief Get the parameters of the function
+	 * 
+	 * @return vector<pair<VDescriptor::TYPE, string>>& the parameters
+	 */
+	vector<pair<VDescriptor::TYPE, string>>& get_params();
+
+	/**
+	 * @brief create a jump to the epilogue of the function
+	 * 
+	 * @param o the output stream
+	 */
+	virtual void jump_to_epilogue(ostream &o)=0;
+
  protected:
+	/** @brief The type of the function associated to this cfg */
 	VDescriptor::TYPE type;
+	/** @brief The name of the function associated to this cfg */
 	string name;
+	/** @brief The parameters of the function associated to this cfg */
 	vector<pair<VDescriptor::TYPE, string>> params;
 	
+	/** @brief The current basic block */
 	BasicBlock* current_bb;
 
-	SymbolTable symbols; /**<the symbol table  */
-	int nextBBnumber; /**< just for naming */
+	/** @brief The symbol table */
+	SymbolTable symbols; 
+	/** @brief A counter to name the blocks */
+	int nextBBnumber;
 	
-	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
+	/** @brief The list of all basic blocks */
+	vector <BasicBlock*> bbs;
 };
 
+/**
+ * \class DummyCFG
+ *  
+ * \brief Subclass of CFG for functions that exist and usable but are not defined in this code (e.g. standard functions putchar, getchar,...)
+ */
 class DummyCFG : public CFG {
  public:
 	DummyCFG() {}
@@ -132,61 +319,25 @@ class DummyCFG : public CFG {
 	virtual VDescriptor::TYPE get_type_reg(string reg){return VDescriptor::TYPE::tvoid;}
 };
 
-
-/**  The class for a basic block */
-
-/* A few important comments.
-	 IRInstr has no jump instructions.
-	 cmp_* instructions behaves as an arithmetic two-operand instruction (add or mult),
-	  returning a boolean value (as an int)
-
-	 Assembly jumps are generated as follows:
-	 BasicBlock::gen_asm() first calls IRInstr::gen_asm() on all its instructions, and then 
-		    if  exit_true  is a  nullptr, 
-            the epilogue is generated
-        else if exit_false is a nullptr, 
-          an unconditional jmp to the exit_true branch is generated
-				else (we have two successors, hence a branch)
-          an instruction comparing the value of test_var_name to true is generated,
-					followed by a conditional branch to the exit_false branch,
-					followed by an unconditional branch to the exit_true branch
-	 The attribute test_var_name itself is defined when converting 
-  the if, while, etc of the AST  to IR.
-
-Possible optimization:
-     a cmp_* comparison instructions, if it is the last instruction of its block, 
-       generates an actual assembly comparison 
-       followed by a conditional jump to the exit_false branch
-*/
-
-class BasicBlock {
- public:
-	BasicBlock(CFG* cfg_, string entry_label) : cfg(cfg_), label(entry_label), exit_true(nullptr),exit_false(nullptr) {}
-	void gen_asm(ostream &o);
-
-	void add_IRInstr(IRInstr* instr);
-
-	// No encapsulation whatsoever here. Feel free to do better.
-	BasicBlock* exit_true;  /**< pointer to the next basic block, true branch. If nullptr, return from procedure */ 
-	BasicBlock* exit_false; /**< pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump */
-	string label; /**< label of the BB, also will be the label in the generated code */
-	CFG* cfg; /** < the CFG where this block belongs */
-	vector<IRInstr*> instrs; /** < the instructions themselves. */
-  	string test_var_name;  /** < when generating IR code for an if(expr) or while(expr) etc,
-													 store here the name of the variable that holds the value of expr */
- protected:
-
- 
-};
-
-
+/**
+ * \class CFGFactory
+ *  
+ * \brief Factory class to create CFGs based on the targetted architecture 
+ */
 class CFGFactory {
  public:
+	/**
+	 * @brief Construct a new CFGFactory object
+	 * 
+	 */
 	CFGFactory() {}
 	
+	/**
+	 * @brief creates a new CFG
+	 * 
+	 * @return CFG* a new CFG
+	 */
 	virtual CFG* create() = 0;
 
  protected:
 };
-
-#endif

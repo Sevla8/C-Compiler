@@ -9,8 +9,8 @@ void CFG::specify_function(VDescriptor::TYPE t, string n, vector<pair<VDescripto
 	params = p;
 }
 BasicBlock* CFG::create_bb() {
+	// Name the new basic block
 	BasicBlock *bb = new BasicBlock(this, name + string(".block") + to_string(nextBBnumber));
-	// current_bb = bb;
 	++nextBBnumber;    
 	return bb;
 }
@@ -39,11 +39,14 @@ vector<pair<VDescriptor::TYPE, string>>& CFG::get_params() {
 
 
 void BasicBlock::gen_asm(ostream &o){
+	// Generate the label
 	o<<label<<':'<<endl;
 	vector<IRInstr*>::iterator it;
+	// Generate the asm for each instruction
 	for(it=instrs.begin();it!=instrs.end();it++) {
 		(*it)->gen_asm(o);
 	}
+	// Generate the jumps
 	cfg->create_jumps(exit_true,exit_false,o);
 }
 

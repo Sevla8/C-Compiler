@@ -35,6 +35,7 @@ antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext *ctx) {
 	symbols->clearTempSection();
+	is_void = false;
 	visitChildren(ctx);
 	// Treat the special case of an instruction return which could be anywhere
 	if (ctx->RETURN() != nullptr) {
@@ -48,6 +49,7 @@ antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext
 antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ctx)
 {
 	symbols->clearTempSection();
+	is_void = false;
 	// Creation of the 3 new basic blocks corresponding to the step of the condition
 	BasicBlock* bb_then=cfg->create_bb();
 	BasicBlock* bb_else=cfg->create_bb();
@@ -100,6 +102,7 @@ antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ct
 antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 {
 	symbols->clearTempSection();
+	is_void = false;
 	// Creation of 3 new basic blocks
 	BasicBlock* bb_check=cfg->create_bb();
 	BasicBlock* bb_body=cfg->create_bb();
@@ -144,6 +147,7 @@ antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 antlrcpp::Any IRProducerVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (ctx->expression()!=nullptr) {
 		symbols->clearTempSection();
+		is_void = false;
 		// Visit the expression associated to an identifier
 		visit(ctx->expression());
 		checkNoVoid();
@@ -203,7 +207,7 @@ antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
 	// Add instructions to call the function with parameters
 	cfg->add_IRInstr_to_current(IRInstr::Operation::call,p);
 	if (func->get_type()==VDescriptor::TYPE::tvoid) {
-		symbols->setVoid(true);
+		is_void = true;
 	}
 	params = previous;
 	return 0;
@@ -584,10 +588,10 @@ int IRProducerVisitor::getErrors() {
 
 bool IRProducerVisitor::checkNoVoid() {
 	// Check if the expression in the last register is of type void
-	if (symbols->isVoid()) {
+	if (is_void) {
 		cerr << "Void function return value used in expression. " << endl;
 		errors += 1;
-		symbols->setVoid(false);
+		is_void = false;
 		return false;
 	}
 	return true;

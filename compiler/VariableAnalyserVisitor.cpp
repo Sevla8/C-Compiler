@@ -78,7 +78,7 @@ antlrcpp::Any VariableAnalyserVisitor::visitPrio14(ifccParser::Prio14Context *ct
 antlrcpp::Any VariableAnalyserVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 	symbols->addBlock();
 	visitChildren(ctx);
-	symbols->setCurrentBlock(symbols->getBlockTree().at(symbols->getCurrentBlock()));
+	symbols->setCurrentBlock(symbols->getParentBlock(symbols->getCurrentBlock()));
 	
 	return 0;
 }

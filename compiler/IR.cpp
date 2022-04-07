@@ -3,7 +3,8 @@
 
 using namespace std;
 
-void CFG::specify_function(string n, vector<string>& p) {
+void CFG::specify_function(VDescriptor::TYPE t, string n, vector<pair<VDescriptor::TYPE, string>>& p) {
+	type = t;
 	name = n;
 	params = p;
 }
@@ -29,7 +30,10 @@ SymbolTable& CFG::get_table() {
 string CFG::get_name() {
 	return name;
 }
-vector<string>& CFG::get_params() {
+VDescriptor::TYPE CFG::get_type() {
+	return type;
+}
+vector<pair<VDescriptor::TYPE, string>>& CFG::get_params() {
 	return params;
 }
 

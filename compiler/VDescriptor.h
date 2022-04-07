@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+
+using namespace std;
+
 class VDescriptor {
 public:
   enum TYPE {
@@ -21,3 +25,4 @@ protected:
   int blockNumber;
 };
 
+VDescriptor::TYPE getTypeFromString(string type);

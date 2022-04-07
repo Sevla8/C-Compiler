@@ -3,8 +3,8 @@
 antlrcpp::Any VariableAnalyserVisitor::visitFunction(ifccParser::FunctionContext *ctx)
 {
 	cfg = factory->create();
-	vector<string> p;
-	vector<string>* previous = params;
+	vector<pair<VDescriptor::TYPE, string>> p;
+	vector<pair<VDescriptor::TYPE, string>>* previous = params;
 	params = &p;
 	symbols = &cfg->get_table();
 	if (ctx->arguments()!=nullptr) {
@@ -12,7 +12,7 @@ antlrcpp::Any VariableAnalyserVisitor::visitFunction(ifccParser::FunctionContext
 		visit(ctx->arguments());
 		symbols->setCurrentBlock(0);
 	}
-	cfg->specify_function(ctx->IDENTIFIER()->getText(), p);
+	cfg->specify_function(getTypeFromString(ctx->type->getText()), ctx->IDENTIFIER()->getText(), p);
 	cfgTable.insert(make_pair(ctx->IDENTIFIER()->getText(),cfg));
 	params = previous;
 	visit(ctx->block());
@@ -21,8 +21,8 @@ antlrcpp::Any VariableAnalyserVisitor::visitFunction(ifccParser::FunctionContext
 
 antlrcpp::Any VariableAnalyserVisitor::visitFuncarg(ifccParser::FuncargContext *ctx)
 {
-	params->push_back(ctx->IDENTIFIER()->getText());
 	symbols->add(ctx->IDENTIFIER()->getText(), ctx->type->getText());
+	params->push_back(make_pair(getTypeFromString(ctx->type->getText()), ctx->IDENTIFIER()->getText()));
 	return 0;
 }
 

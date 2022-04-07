@@ -253,9 +253,9 @@ void CFGx86::gen_asm_prologue(ostream &o)
     for (i=0; i<params.size(); ++i) {
         if (i>=6) {
             o<<"movq "<<((i-6)*8+16)<<"(%rbp), %rax\n";
-            o<<"movl %eax, "<<IR_reg_to_asm(params[i])<<"\n";
+            o<<"movl %eax, "<<IR_reg_to_asm(params[i].second)<<"\n";
         } else {
-            o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i])<<"\n";
+            o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i].second)<<"\n";
         }
     }
     int offset = get_table().getMaxStackSize();

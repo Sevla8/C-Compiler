@@ -3,7 +3,6 @@
 
 using namespace std;
 
-// Modifier pour regarder dans les blocs parents 
 bool SymbolTable::existCurrent(string id, int blockNum) {
 	pair<string, int> pair_id=make_pair(id,blockNum);
 	return symbols.find(pair_id)!=symbols.end();
@@ -39,12 +38,7 @@ int SymbolTable::exists(string id) {
 }
 
 void SymbolTable::add(std::string id, std::string type) {
-	VDescriptor::TYPE t;
-	if(type == "int"){
-		t = VDescriptor::TYPE::tint;
-	}else if(type == "char"){
-		t = VDescriptor::TYPE::tchar;
-	}
+	VDescriptor::TYPE t = getTypeFromString(type);
 	VDescriptor vd ((int)(var_count*4), t, currentBlock);
 	++var_count;
 	pair<string, int> pair_id=make_pair(id,currentBlock);

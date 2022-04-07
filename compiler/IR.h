@@ -83,7 +83,7 @@ class CFG {
  public:
 	CFG() : nextBBnumber(0) {}
 	
-	void specify_function(string name, vector<string>& params);
+	void specify_function(VDescriptor::TYPE type, string name, vector<pair<VDescriptor::TYPE, string>>& params);
 	BasicBlock* create_bb();
 	virtual void add_IRInstr_to_current(IRInstr::Operation op, vector<string>& params) = 0;
 
@@ -99,13 +99,15 @@ class CFG {
 	void add_bb(BasicBlock* newBB);
 	SymbolTable& get_table();
 	string get_name();
-	vector<string>& get_params();
+	VDescriptor::TYPE get_type();
+	vector<pair<VDescriptor::TYPE, string>>& get_params();
 	virtual void jump_to_epilogue(ostream &o)=0;
 	virtual VDescriptor::TYPE get_type_reg(string reg)=0;
 
  protected:
+	VDescriptor::TYPE type;
 	string name;
-	vector<string> params;
+	vector<pair<VDescriptor::TYPE, string>> params;
 	
 	BasicBlock* current_bb;
 

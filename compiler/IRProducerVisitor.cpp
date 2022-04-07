@@ -161,7 +161,7 @@ antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
 	vector<string>* previous = params;
 	params = &p;
 	visitChildren(ctx);
-	if (p.size()!=func->get_params().size()+1) {
+	if (p.size()<func->get_params().size()+1) {
 		cerr << "Functions don't have the same number of parameters" << endl;
 		errors += 1;
 	}

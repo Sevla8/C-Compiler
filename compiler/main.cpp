@@ -50,10 +50,10 @@ int main(int argn, const char **argv)
   CFGx86Factory factory;
 
   DummyCFG putchar, getchar;
-  vector<string> pcparams, gcparams;
-  pcparams.push_back("c");
-  putchar.specify_function("putchar@PLT", pcparams);
-  getchar.specify_function("getchar@PLT", gcparams);
+  vector<pair<VDescriptor::TYPE, string>> pcparams, gcparams;
+  pcparams.push_back(make_pair(VDescriptor::TYPE::tint, "c"));
+  putchar.specify_function(VDescriptor::TYPE::tint, "putchar@PLT", pcparams);
+  getchar.specify_function(VDescriptor::TYPE::tint, "getchar@PLT", gcparams);
   functions.insert(make_pair("putchar", &putchar));
   functions.insert(make_pair("getchar", &getchar));
 

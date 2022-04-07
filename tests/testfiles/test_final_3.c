@@ -13,4 +13,5 @@ void print_int(int x){
 int main() {
     print_int(-273);
     putchar(10);// newline
+    return 0;
 }

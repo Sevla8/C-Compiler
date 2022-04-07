@@ -10,7 +10,7 @@ int alphabet(int n){
     return a;
 }
 int main() {
-    int c,
+    int c;
     c = alphabet(15);
     return c; 
 }

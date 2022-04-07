@@ -6,32 +6,31 @@ string REGCALL[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
 
 void IRInstrx86::gen_asm(ostream &o)
 {
+    // Change the current block of the symbol table
     cfg->get_table().setCurrentBlock(num_block);
     string tmp("%ebx");
     string opstring;
     int i, size_max;
+    // Differentiate cases depending on the operation and write assembly code corresponding to the operation
     switch (op)
     {
     case Operation::ldconst:
         o << "movl $" << params[1] << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
         break;
     case Operation::copy:
+        // Copy of 32 bytes into a 8 bytes register if the destination type register is a char
         if(cfg->get_type_reg(params[0])== VDescriptor::TYPE::tchar){
-            // 32-> 8
-            // movb src, dest // si src= eax-> al
+            // If the source is %eax, we copy into %al
             string srcReg=cfg->IR_reg_to_asm(params[1]);
             if(params[1]=="!reg"){
                 srcReg="%al";
             }
             o << "movb " << srcReg << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
-
+        // Copy of 8 bytes into a 32 bytes register if the source type register is a char
         }else if(cfg->get_type_reg(params[1])== VDescriptor::TYPE::tchar){
-        // 8-> 32
-        // movsbl src, dest
             o << "movsbl " << cfg->IR_reg_to_asm(params[1]) << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
-
+        // Copy of 32 bytes into a 32 bytes register
         }else{
-            // 32-> 32
             o << "movl " << cfg->IR_reg_to_asm(params[1]) << ", " << cfg->IR_reg_to_asm(params[0]) << "\n";
         }        
         break;
@@ -175,22 +174,26 @@ void IRInstrx86::gen_asm(ostream &o)
 }
 
 void CFGx86::jump_to_epilogue(ostream &o){
+    // Assembly code to jump without condition to the epilogue's function
     o<<"jmp "<<name<<".epilogue \n";
 }
 
 void CFGx86::create_jumps(BasicBlock* exit_true,BasicBlock* exit_false,ostream &o){
+    // Jump without condition if the 2  basicblocks are defined and equals
     if(exit_true!=nullptr && exit_false!=nullptr && (exit_true->label)==(exit_false->label)){
         o<<"jmp "<<exit_true->label<<'\n';
     }else{
+        // Jump if the previous instruction is not equal to 0 to the basic block true
         if(exit_true!=nullptr){
             o<<"jne "<<exit_true->label<<'\n';
         }
+        // Jump if the previous instruction is equal to 0 to the basic block false
         if(exit_false!=nullptr){
             o<<"je "<<exit_false->label<<'\n';
         }
-    }
-    
+    }   
 }
+
 SymbolTable& CFGx86::get_table(){
     return symbols;
 }
@@ -204,12 +207,15 @@ void CFGx86::add_IRInstr_to_current(IRInstr::Operation op, vector<string> &param
 // x86 code generation: could be encapsulated in a processor class in a retargetable compiler
 void CFGx86::gen_asm(ostream &o)
 {
+    // Generation of the prologue
     gen_asm_prologue(o);
+    // Generation of the assembly code for each basic block
     vector<BasicBlock *>::iterator it;
     for (it = bbs.begin(); it != bbs.end(); it++)
     {
         (*it)->gen_asm(o);
     }
+    // Generation of the epilogue
     gen_asm_epilogue(o);
 }
 
@@ -219,11 +225,14 @@ string CFGx86::IR_reg_to_asm(string reg)
     {
         return string("%eax");
     }
+    // Check if the variable exists in the symbol table
     else if (symbols.exists(reg)!=-1)
     {
+        // Get the offset of the register in which the variable is stored
         pair<string,int> id=make_pair(reg,symbols.exists(reg));
         return string("-") + to_string(symbols.get(id).getOffset()) + string("(%rbp)");
     }
+    // It's temporary register
     else
     {
         return string("-") + reg + string("(%rbp)");
@@ -232,11 +241,15 @@ string CFGx86::IR_reg_to_asm(string reg)
 
 VDescriptor::TYPE CFGx86::get_type_reg(string reg)
 {
+    // Check if the variable exists in the symbol table
     if(symbols.exists(reg)!=-1)
     {
+        // Get the type of the symbol
         pair<string,int> id=make_pair(reg,symbols.exists(reg));
         return symbols.get(id).getType();
-    } else
+    }
+    // By default it returns the type 'tint' 
+    else
     {
         return VDescriptor::TYPE::tint;
     }
@@ -250,6 +263,7 @@ void CFGx86::gen_asm_prologue(ostream &o)
          " 	pushq  %rbp\n"
          " 	movq   %rsp, %rbp\n";
     symbols.setCurrentBlock(1);
+    // Write assembly code for eventual parameters of a function
     for (i=0; i<params.size(); ++i) {
         if (i>=6) {
             o<<"movq "<<((i-6)*8+16)<<"(%rbp), %rax\n";

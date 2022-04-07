@@ -1,23 +1,9 @@
-/*************************************************************************
-                                IRProducerVisitor
-    copyright            : (C) 2022 par H4224
-    participants         : ALGOURDIN Benoit, ALVES Brandon, BELIAZI Léna,
-						   BEYE Sellem, BROYER Maya, de LAMBERTYE Grégoire,
-						   SERRANIA Tyefen, ZOUID Moustapha
-*************************************************************************/
-
 #include "IRProducerVisitor.h"
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 
 using namespace std;
 
-/**
- * Visit the item function defined in the grammar
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitFunction(ifccParser::FunctionContext *ctx)
 {
 	// Set the number of block to 0
@@ -34,14 +20,6 @@ antlrcpp::Any IRProducerVisitor::visitFunction(ifccParser::FunctionContext *ctx)
 	return 0;
 }
 
-/**
- * Visit the item block defined in the grammar
- * 
- * A block corresponds to a portion in the program which is defined between '{ }'
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 	// Memorize the number of the previous block visited
 	int previous_block=block_visited;
@@ -55,12 +33,6 @@ antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item instruction defined in the grammar
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext *ctx) {
 	symbols->clearTempSection();
 	visitChildren(ctx);
@@ -73,16 +45,6 @@ antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext
 	return 0;
 }
 
-/**
- * Visit the item condition defined in the grammar
- * 
- * A condition is composed of an 'if' and optionnaly 'else if' or 'else'
- * To code a condition in assembly we have to switch block depending on the result of the 
- * condition
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ctx)
 {
 	symbols->clearTempSection();
@@ -135,15 +97,6 @@ antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ct
 	return 0;
 }
 
-/**
- * Visit the item loop defined in the grammar
- * 
- * A loop is defined with a 'while'. To implement it we have to switch of block
- * depending of the expression for the loop.
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 {
 	symbols->clearTempSection();
@@ -188,12 +141,6 @@ antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 	return 0;
 }
 
-/**
- * Visit the item declstatement defined in the grammar
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (ctx->expression()!=nullptr) {
 		symbols->clearTempSection();
@@ -209,14 +156,6 @@ antlrcpp::Any IRProducerVisitor::visitDeclstatement(ifccParser::DeclstatementCon
 	return 0;
 }
 
-/**
- * Visit the item value defined in the grammar
- * 
- * A value is defined as an integer
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitValue(ifccParser::ValueContext *ctx) {
 	// Add instructions to the CFG
 	vector<string> p;
@@ -226,14 +165,6 @@ antlrcpp::Any IRProducerVisitor::visitValue(ifccParser::ValueContext *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item varValue defined in the grammar
- * 
- * A varValue is defined as an identifier of a variable
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx) {
 	// Add instructions to the CFG
 	vector<string> p;
@@ -243,14 +174,6 @@ antlrcpp::Any IRProducerVisitor::visitVarvalue(ifccParser::VarvalueContext *ctx)
 	return 0;
 }
 
-/**
- * Visit the item char defined in the grammar
- * 
- * A char is defined as a character bewteen quotes, such as 'a'
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitChar(ifccParser::CharContext *ctx) {
 	// Add instructions to the CFG 
     vector<string> p;
@@ -262,14 +185,6 @@ antlrcpp::Any IRProducerVisitor::visitChar(ifccParser::CharContext *ctx) {
     return 0;
 } 
 
-/**
- * Visit the item call defined in the grammar
- * 
- * A call is defined when in the code there is an utilisation of a method defined previously
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
 	// Get the CFG corresponding to the function called
 	CFG* func = cfgTable.find(ctx->IDENTIFIER()->getText())->second;
@@ -294,14 +209,6 @@ antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item callArg defined in the grammar
- * 
- * A callArg is an argument in a function which is an expression
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitCallarg(ifccParser::CallargContext *ctx) {
 	// Visit of all children
 	visitChildren(ctx);
@@ -316,15 +223,6 @@ antlrcpp::Any IRProducerVisitor::visitCallarg(ifccParser::CallargContext *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio14 defined in the grammar
- * 
- * The prio14 corresponds which link a variable identifier and an expression with operators
- * such as : '=', '-=', '+=', '*='...
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	// Visit the expression and store the result at the top of the stack 
 	visit(ctx->expression());
@@ -360,14 +258,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio2 defined in the grammar
- * 
- * The prio2 corresponds to the operation unary 'NOT' and unary/binary '+', '-'
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	// Visit the expression and store the result at the top of the stack
 	visit(ctx->expression());
@@ -400,15 +290,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	
 }
 
-/**
- * Visit the item prio3 defined in the grammar
- * 
- * The prio3 corresponds to an arithmetic operation between 2 expressions 
- * such as : '*', '/' and '%' 
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -438,15 +319,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio4 defined in the grammar
- * 
- * The prio4 corresponds to an arithmetic operation between 2 expressions 
- * such as : '+' and '-' 
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -474,14 +346,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio8 defined in the grammar
- * 
- * The prio 8 corresponds to the binary operation 'AND' between 2 expressions
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio8(ifccParser::Prio8Context *ctx){
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -507,12 +371,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio8(ifccParser::Prio8Context *ctx){
 	return 0;
 }
 
-/**
- * Visit the item prio9 defined in the grammar
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio9(ifccParser::Prio9Context *ctx){
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -538,13 +396,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio9(ifccParser::Prio9Context *ctx){
 	return 0;
 }
 
-/**
- * Visit the item prio10 defined in the grammar
- * 
- * The prio10 corresponds to the binary operation 'OR' between 2 expressions
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio10(ifccParser::Prio10Context *ctx){
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -570,14 +421,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio10(ifccParser::Prio10Context *ctx){
 	return 0;
 }
 
-/**
- * Visit the item prio6 defined in the grammar
- * 
- * The prio6 corresponds to comparison between 2 expressions
- * such as : '<', '>', '<=' and '>='
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio6(ifccParser::Prio6Context *ctx) {
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -612,15 +455,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio6(ifccParser::Prio6Context *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio7 defined in the grammar
- * 
- * The prio7 correpsonds to an equality comparison between 2 expressions,
- * such as : '==' and '!=' 
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -649,15 +483,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio5 defined in the grammar
- * 
- * The prio5 corresponds to the binary operation 'SHIFT' between 2 expressions
- * such as : '<<' and '>>'
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio5(ifccParser::Prio5Context *ctx) {
 	// Visit the first expression and store the result at the top of the stack
 	visit(ctx->expression(0));
@@ -686,15 +511,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio5(ifccParser::Prio5Context *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio12 defined in the grammar
- * 
- * The prio12 corresponds to the logical 'OR' between 2 expressions,
- * such as : '||'
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio12(ifccParser::Prio12Context *ctx) {
 	//create 2 block :  second_member_bb , end_test_bb
 	BasicBlock* bb_second_member=cfg->create_bb();
@@ -728,15 +544,6 @@ antlrcpp::Any IRProducerVisitor::visitPrio12(ifccParser::Prio12Context *ctx) {
 	return 0;
 }
 
-/**
- * Visit the item prio11 defined in the grammar
- * 
- * The prio12 corresponds to the logical 'AND' between 2 expressions,
- * such as : '&&'
- * 
- * @param ctx 
- * @return antlrcpp::Any 
- */
 antlrcpp::Any IRProducerVisitor::visitPrio11(ifccParser::Prio11Context *ctx) {
 	//create 2 block :  second_member_bb , end_test_bb
 	BasicBlock* bb_second_member=cfg->create_bb();
@@ -771,16 +578,12 @@ antlrcpp::Any IRProducerVisitor::visitPrio11(ifccParser::Prio11Context *ctx) {
 	return 0;
 }
 
-/**
- * Return the number of errors 
- * 
- * @return int 
- */
 int IRProducerVisitor::getErrors() {
 	return errors;
 }
 
 bool IRProducerVisitor::checkNoVoid() {
+	// Check if the expression in the last register is of type void
 	if (symbols->isVoid()) {
 		cerr << "Void function return value used in expression. " << endl;
 		errors += 1;

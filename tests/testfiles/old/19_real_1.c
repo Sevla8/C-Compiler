@@ -2,12 +2,12 @@ void print_int(int x)
 {
     if (x < 0)
     {
-        putchar(45); // '-'
+        putchar('-');
         x = -x;
     }
     if (x / 10 != 0)
         print_int(x / 10);
-    putchar(x % 10 + 48); // '0'
+    putchar(x % 10 + '0');
 }
 int main()
 {

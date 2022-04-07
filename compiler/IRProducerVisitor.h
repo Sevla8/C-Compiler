@@ -72,6 +72,8 @@ public:
   int getErrors();
 
 protected:
+  bool checkNoVoid();
+
   // Map to store all CFG
   map<string,CFG*>& cfgTable;
   // Current CFG

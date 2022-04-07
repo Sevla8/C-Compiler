@@ -16,21 +16,26 @@ public:
   void add(string id, string type);
   VDescriptor& get(pair<string, int> id);
   string getTempVariable();
-  void clearTempVariable();
+  void clearTempSection();
   int getMaxStackSize();
   void addBlock();
   void setCurrentBlock(int numBlock);
   int getCurrentBlock();
   map<int, int> getBlockTree();
   bool existCurrent(string id,int blockNum);
+  void setVoid(bool v);
+  bool isVoid();
 
 
 protected:
+  void alignStack();
+
   map<pair<string, int>, VDescriptor> symbols;
-  int var_count = 1;
-  int tmp_count = 0;
+  int stack_size = 0;
+  int tmp_size = 0;
   int max_tmp = 0;
   int currentBlock = 0;
   map<int, int> blockTree;
+  bool is_void;
 };
 

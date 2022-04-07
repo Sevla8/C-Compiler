@@ -253,9 +253,19 @@ void CFGx86::gen_asm_prologue(ostream &o)
     for (i=0; i<params.size(); ++i) {
         if (i>=6) {
             o<<"movq "<<((i-6)*8+16)<<"(%rbp), %rax\n";
-            o<<"movl %eax, "<<IR_reg_to_asm(params[i].second)<<"\n";
+            if(get_type_reg(params[i].second)== VDescriptor::TYPE::tchar){
+                o<<"movb %al, "<<IR_reg_to_asm(params[i].second)<<"\n";
+            } else {
+                o<<"movl %eax, "<<IR_reg_to_asm(params[i].second)<<"\n";
+            }
         } else {
-            o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i].second)<<"\n";
+            if(get_type_reg(params[i].second)== VDescriptor::TYPE::tchar){
+                o<<"movl "<<REGCALL[i]<<", %eax\n";
+                o << "movb %al, "<<IR_reg_to_asm(params[i].second)<<"\n";
+
+            } else {
+                o<<"movl "<<REGCALL[i]<<", "<<IR_reg_to_asm(params[i].second)<<"\n";
+            }
         }
     }
     int offset = get_table().getMaxStackSize();
@@ -267,8 +277,11 @@ void CFGx86::gen_asm_prologue(ostream &o)
 
 void CFGx86::gen_asm_epilogue(ostream &o)
 {
-    o << name <<".epilogue:\n"
-         " 	leave\n"
+    o << name <<".epilogue:\n";
+    if (type==VDescriptor::TYPE::tchar) {
+        o << "  movsbl %al, %eax\n";
+    }
+    o << " 	leave\n"
          " 	ret\n";
 }
 

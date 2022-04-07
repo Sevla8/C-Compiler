@@ -27,8 +27,10 @@ antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 }
 
 antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext *ctx) {
+	symbols->clearTempSection();
 	visitChildren(ctx);
 	if (ctx->RETURN() != nullptr) {
+		checkNoVoid();
 		vector<string> p;
 		cfg->add_IRInstr_to_current(IRInstr::Operation::ret,p);
 	}
@@ -37,6 +39,7 @@ antlrcpp::Any IRProducerVisitor::visitInstruction(ifccParser::InstructionContext
 
 antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ctx)
 {
+	symbols->clearTempSection();
 	BasicBlock* bb_then=cfg->create_bb();
 	BasicBlock* bb_else=cfg->create_bb();
 	BasicBlock* bb_endif=cfg->create_bb();
@@ -81,6 +84,7 @@ antlrcpp::Any IRProducerVisitor::visitCondition(ifccParser::ConditionContext *ct
 
 antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 {
+	symbols->clearTempSection();
 	BasicBlock* bb_check=cfg->create_bb();
 	BasicBlock* bb_body=cfg->create_bb();
 	BasicBlock* bb_endwhile=cfg->create_bb();
@@ -120,7 +124,9 @@ antlrcpp::Any IRProducerVisitor::visitLoop(ifccParser::LoopContext *ctx)
 
 antlrcpp::Any IRProducerVisitor::visitDeclstatement(ifccParser::DeclstatementContext *ctx) {
 	if (ctx->expression()!=nullptr) {
+		symbols->clearTempSection();
 		visit(ctx->expression());
+		checkNoVoid();
 		vector<string> p;
 		p.push_back(ctx->IDENTIFIER()->getText());
 		p.push_back("!reg");
@@ -166,12 +172,16 @@ antlrcpp::Any IRProducerVisitor::visitCall(ifccParser::CallContext *ctx) {
 		errors += 1;
 	}
 	cfg->add_IRInstr_to_current(IRInstr::Operation::call,p);
+	if (func->get_type()==VDescriptor::TYPE::tvoid) {
+		symbols->setVoid(true);
+	}
 	params = previous;
 	return 0;
 }
 
 antlrcpp::Any IRProducerVisitor::visitCallarg(ifccParser::CallargContext *ctx) {
 	visitChildren(ctx);
+	checkNoVoid();
 	string tmp = symbols->getTempVariable();
 	vector<string> p;
 	p.push_back(tmp);
@@ -183,6 +193,7 @@ antlrcpp::Any IRProducerVisitor::visitCallarg(ifccParser::CallargContext *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 	visit(ctx->expression());
+	checkNoVoid();
 	vector<string> p, q;
 	if (ctx->EQ() != nullptr) {
 		p.push_back(ctx->IDENTIFIER()->getText());
@@ -203,17 +214,17 @@ antlrcpp::Any IRProducerVisitor::visitPrio14(ifccParser::Prio14Context *ctx) {
 			p.push_back("!reg");
 			cfg->add_IRInstr_to_current(IRInstr::Operation::sub,p);
 		}
-		q.push_back("!reg");
-		q.push_back(ctx->IDENTIFIER()->getText());
-		cfg->add_IRInstr_to_current(IRInstr::Operation::copy,q);
 	}
-
+	q.push_back("!reg");
+	q.push_back(ctx->IDENTIFIER()->getText());
+	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,q);
 	return 0;
 }
 
 
 antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 	visit(ctx->expression());
+	checkNoVoid();
 	vector<string> p;
 
 	p.push_back("!reg");
@@ -238,12 +249,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio2(ifccParser::Prio2Context *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -259,12 +272,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio3(ifccParser::Prio3Context *ctx) {
 }
 antlrcpp::Any IRProducerVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -279,12 +294,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio4(ifccParser::Prio4Context *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio8(ifccParser::Prio8Context *ctx){
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -297,12 +314,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio8(ifccParser::Prio8Context *ctx){
 
 antlrcpp::Any IRProducerVisitor::visitPrio9(ifccParser::Prio9Context *ctx){
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -315,12 +334,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio9(ifccParser::Prio9Context *ctx){
 
 antlrcpp::Any IRProducerVisitor::visitPrio10(ifccParser::Prio10Context *ctx){
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -334,12 +355,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio10(ifccParser::Prio10Context *ctx){
 
 antlrcpp::Any IRProducerVisitor::visitPrio6(ifccParser::Prio6Context *ctx) {
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -362,12 +385,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio6(ifccParser::Prio6Context *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -383,12 +408,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio7(ifccParser::Prio7Context *ctx) {
 
 antlrcpp::Any IRProducerVisitor::visitPrio5(ifccParser::Prio5Context *ctx) {
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back(tmp);
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::copy,p);
 	visit(ctx->expression(1));
+	checkNoVoid();
 	q.push_back("!reg");
 	q.push_back(tmp);
 	q.push_back("!reg");
@@ -417,6 +444,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio12(ifccParser::Prio12Context *ctx) {
 	cur_bb->exit_false=bb_second_member;
 	cur_bb->exit_true=bb_end_ou_paresseux;
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p;
 	p.push_back("!reg");
 	cfg->add_IRInstr_to_current(IRInstr::Operation::cmp_z,p);
@@ -424,6 +452,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio12(ifccParser::Prio12Context *ctx) {
 	cfg->add_bb(bb_second_member);	
 	cfg->set_current_bb(bb_second_member);
 	visit(ctx->expression(1));
+	checkNoVoid();
 
 //mais on a pas defini qu'est ce qui se passe dans le bloc bb_end_ou_paresseux
 	cfg->add_bb(bb_end_ou_paresseux);
@@ -448,6 +477,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio11(ifccParser::Prio11Context *ctx) {
 	cur_bb->exit_false=bb_end_and_paresseux;
 	cur_bb->exit_true=bb_second_member;
 	visit(ctx->expression(0));
+	checkNoVoid();
 	vector<string> p, q;
 	string tmp = symbols->getTempVariable();
 	p.push_back("!reg");
@@ -456,6 +486,7 @@ antlrcpp::Any IRProducerVisitor::visitPrio11(ifccParser::Prio11Context *ctx) {
 	cfg->add_bb(bb_second_member);	
 	cfg->set_current_bb(bb_second_member);
 	visit(ctx->expression(1));
+	checkNoVoid();
 
 // ------------idem en terme de def
 	cfg->add_bb(bb_end_and_paresseux);
@@ -468,4 +499,14 @@ antlrcpp::Any IRProducerVisitor::visitPrio11(ifccParser::Prio11Context *ctx) {
 
 int IRProducerVisitor::getErrors() {
 	return errors;
+}
+
+bool IRProducerVisitor::checkNoVoid() {
+	if (symbols->isVoid()) {
+		cerr << "Void function return value used in expression. " << endl;
+		errors += 1;
+		symbols->setVoid(false);
+		return false;
+	}
+	return true;
 }

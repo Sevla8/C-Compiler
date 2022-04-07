@@ -63,6 +63,8 @@ public:
   int getErrors();
 
 protected:
+  bool checkNoVoid();
+
   map<string,CFG*>& cfgTable;
   CFG* cfg;
   SymbolTable* symbols;

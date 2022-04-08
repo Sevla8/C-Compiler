@@ -22,13 +22,15 @@ antlrcpp::Any IRProducerVisitor::visitFunction(ifccParser::FunctionContext *ctx)
 
 antlrcpp::Any IRProducerVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 	// Memorize the number of the previous block visited
-	int previous_block=block_visited;
+	int previous_block=symbols->getCurrentBlock();
 	// Increase the number of block visited
 	block_visited++;
 	// Change the number of the current block and visit all children of this block
+	cerr << "block" << block_visited << endl;
 	symbols->setCurrentBlock(block_visited);
 	visitChildren(ctx);
 	// Retrieve the previous number of the block 
+	cerr << "block" << previous_block << endl;
 	symbols->setCurrentBlock(previous_block);
 	return 0;
 }

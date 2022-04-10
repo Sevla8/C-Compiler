@@ -19,7 +19,7 @@ using namespace std;
 #include "IRx86.h"
 
 /**
- * \class IRProducerVistor
+ * \class IRProducerVisitor
  *  
  * \brief Class overriding vistors generated automatically by ANTLR
  */
